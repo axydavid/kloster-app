@@ -1,0 +1,862 @@
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Button } from "./ui/button"
+import { Input } from "./ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import SimpleUserIcon from './SimpleUserIcon';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import { UserContext } from './Layout';
+import { useNavigate } from 'react-router-dom';
+import cowIcon from '../icons/cow.png';
+import pigIcon from '../icons/pig.png';
+import chickenIcon from '../icons/chicken.png';
+import fishIcon from '../icons/fish.png';
+import riceBowlIcon from '../icons/rice-bowl.png';
+import potatoIcon from '../icons/potato.png';
+import breadIcon from '../icons/bread.png';
+import saladIcon from '../icons/salad.png';
+import mincedMeatIcon from '../icons/minced-meat.png';
+import pastaIcon from '../icons/pasta.png';
+import cheeseIcon from '../icons/cheese.png';
+
+const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
+
+const Dinner: React.FC = () => {
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    fetchCurrentUser();
+  }, []);
+
+  const ingredientIcons: { [key: string]: React.ReactElement } = {
+    'Beef': <img src={cowIcon} alt="Beef" className="w-10 h-10 object-contain" />,
+    'Pork': <img src={pigIcon} alt="Pork" className="w-10 h-10 object-contain" />,
+    'Chicken': <img src={chickenIcon} alt="Chicken" className="w-10 h-10 object-contain" />,
+    'Fish': <img src={fishIcon} alt="Fish" className="w-10 h-10 object-contain" />,
+    'Minced Meat': <img src={mincedMeatIcon} alt="Minced Meat" className="w-10 h-10 object-contain" />,
+    'Rice': <img src={riceBowlIcon} alt="Rice" className="w-10 h-10 object-contain" />,
+    'Potatoes': <img src={potatoIcon} alt="Potatoes" className="w-10 h-10 object-contain" />,
+    'Pasta': <img src={pastaIcon} alt="Pasta" className="w-10 h-10 object-contain" />,
+    'Bread': <img src={breadIcon} alt="Bread" className="w-10 h-10 object-contain" />,
+    'Salad': <img src={saladIcon} alt="Salad" className="w-10 h-10 object-contain" />,
+    'Cheese': <img src={cheeseIcon} alt="Cheese" className="w-10 h-10 object-contain" />,
+  };
+
+  interface Attendant {
+    id: string;
+    portions: number;
+    isTakeAway: boolean;
+  }
+
+  interface DinnerDay {
+    date: string;
+    cooks: string[];
+    ingredients: string[];
+    attendants: Attendant[];
+  }
+
+  interface AdminSettings {
+    budgetPerMeal: number;
+    currencyType: string;
+    suspendedWeekdays: number[];
+    dinner: string[];
+  }
+
+  interface UserData {
+    id: string;
+    raw_user_meta_data: any;
+  }
+  const hasScrolledToCurrentDay = useRef(false);
+  const [adminSettings, setAdminSettings] = useState<AdminSettings>({
+    budgetPerMeal: 0,
+    currencyType: ':-',
+    suspendedWeekdays: [],
+    dinner: []
+  });
+  const navigate = useNavigate();
+
+  const canMakeChanges = useCallback(() => {
+    return currentUserId ? adminSettings.dinner.includes(currentUserId) : false;
+  }, [adminSettings.dinner, currentUserId]);
+
+  const showRestrictedAccessPopup = useCallback(() => {
+    return new Promise<boolean>((resolve) => {
+      const dialog = document.createElement('div');
+      dialog.innerHTML = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-in fade-in ease-out duration-300" onclick="this.classList.add('animate-out', 'fade-out'); setTimeout(() => { this.remove(); resolve(false); }, 250);">
+          <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full animate-in zoom-in-50 duration-300" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Restricted Access</h2>
+              <button class="text-gray-500 hover:text-gray-700" onclick="this.closest('.fixed').classList.add('animate-out', 'fade-out'); setTimeout(() => { this.closest('.fixed').remove(); resolve(false); }, 250);">✕</button>
+            </div>
+            <p class="mb-4">You cannot make changes as you have not joined dinners in settings.</p>
+            <div class="flex justify-end space-x-2">
+              <button class="px-4 py-2 bg-gray-200 rounded" onclick="this.closest('.fixed').classList.add('animate-out', 'fade-out'); setTimeout(() => { this.closest('.fixed').remove(); resolve(false); }, 250);">OK</button>
+              <button class="px-4 py-2 bg-blue-500 text-white rounded" onclick="this.closest('.fixed').classList.add('animate-out', 'fade-out'); setTimeout(() => { this.closest('.fixed').remove(); resolve(true); }, 250);">Settings</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(dialog);
+      (window as any).resolve = resolve;
+
+      const handleEscapeKey = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          dialog.querySelector('.fixed')?.classList.add('animate-out', 'fade-out');
+          setTimeout(() => {
+            dialog.remove();
+            resolve(false);
+          }, 250);
+          document.removeEventListener('keydown', handleEscapeKey);
+        }
+      };
+      document.addEventListener('keydown', handleEscapeKey);
+    });
+  }, []);
+
+  const handleRestrictedAccess = useCallback(async () => {
+    if (!canMakeChanges()) {
+      const goToSettings = await showRestrictedAccessPopup();
+      if (goToSettings) {
+        navigate('/settings');
+      }
+      return false;
+    }
+    return true;
+  }, [canMakeChanges, showRestrictedAccessPopup, navigate]);
+  const users = useContext(UserContext);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAdminSettings = async () => {
+    const { data, error } = await supabase
+      .from('admin_settings')
+      .select('budget_per_meal, currency_type, suspended_weekdays, dinner')
+      .single();
+
+    if (error) {
+      console.error('Error fetching admin settings:', error);
+    } else {
+      setAdminSettings({
+        budgetPerMeal: data.budget_per_meal,
+        currencyType: data.currency_type,
+        suspendedWeekdays: data.suspended_weekdays || [],
+        dinner: data.dinner || []
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchAdminSettings();
+  }, []);
+  const fixedHeaderStyle: React.CSSProperties = {
+    width: '100%',
+    maxWidth: '100%',
+    boxSizing: 'border-box',
+  };
+  const contextUsers = useContext(UserContext);
+  const [dinnerDays, setDinnerDays] = useState<DinnerDay[]>([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
+  const [guestCount, setGuestCount] = useState<number>(0);
+  const [startDate, setStartDate] = useState<Date>(() => new Date());
+  const tableHeaderRef = useRef<HTMLDivElement>(null);
+  const [isIngredientsPopupOpen, setIsIngredientsPopupOpen] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  const handlePopoverOpenChange = useCallback((open: boolean) => {
+    setIsIngredientsPopupOpen(open);
+  }, []);
+
+  const closePopover = useCallback(() => {
+    const popoverTrigger = document.querySelector('[data-state="open"]');
+    if (popoverTrigger instanceof HTMLElement) {
+      popoverTrigger.click();
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDinnerDays();
+  }, [startDate]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (tableHeaderRef.current) {
+        const cardContent = tableHeaderRef.current.closest('.card-content');
+        const cardContentTop = cardContent ? cardContent.getBoundingClientRect().top : 0;
+        if (window.scrollY > cardContentTop) {
+          tableHeaderRef.current.classList.add('fixed', 'top-0', 'left-4', 'z-10', 'border-x');
+          tableHeaderRef.current.style.width = 'calc(100% - 2rem)'; // Decrease width by 2rem (4 units of padding)
+        } else {
+          tableHeaderRef.current.classList.remove('fixed', 'top-0', 'left-4', 'z-10', 'border-x');
+          tableHeaderRef.current.style.width = '100%';
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!hasScrolledToCurrentDay.current && dinnerDays.length > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      const currentDayElement = document.getElementById(`day-${today}`);
+      if (currentDayElement) {
+        currentDayElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      hasScrolledToCurrentDay.current = true;
+    }
+  }, [dinnerDays]);
+
+  const fetchDinnerDays = async () => {
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 28); // 4 weeks from start date
+
+    const { data, error } = await supabase
+      .from('dinner_days')
+      .select('*')
+      .gte('date', startDate.toISOString())
+      .lte('date', endDate.toISOString())
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching dinner days:', error);
+    } else {
+      const allDays = getAllDaysInRange(startDate, endDate);
+      const mergedDays = allDays.map(day => {
+        const dateString = day.toISOString().split('T')[0];
+        const existingDay = data?.find(d => d.date === dateString);
+        return existingDay || {
+          date: dateString,
+          cooks: [],
+          ingredients: [],
+          attendants: []
+        };
+      });
+      setDinnerDays(mergedDays);
+    }
+  };
+
+  const getAllDaysInRange = (start: Date, end: Date) => {
+    const days = [];
+    let currentDay = new Date(start);
+    while (currentDay <= end) {
+      days.push(new Date(currentDay));
+      currentDay.setDate(currentDay.getDate() + 1);
+    }
+    return days;
+  };
+
+  const isDaySuspended = (date: Date): boolean => {
+    return adminSettings.suspendedWeekdays.includes(date.getDay());
+  };
+
+  const showConfirmationDialog = async (message: string): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => {
+      const dialog = document.createElement('div');
+      dialog.innerHTML = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-in fade-in ease-out duration-300" onclick="this.classList.add('animate-out', 'fade-out'); setTimeout(() => { this.remove(); resolve(false); }, 250);">
+          <div class="bg-white p-6 rounded-lg shadow-xl animate-in zoom-in-50 duration-300" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">Confirmation</h2>
+              <button class="text-gray-500 hover:text-gray-700" onclick="this.closest('.fixed').classList.add('animate-out', 'fade-out'); setTimeout(() => { this.closest('.fixed').remove(); resolve(false); }, 250);">✕</button>
+            </div>
+            <p class="mb-4">${message.split('. ').join('.<br>')}</p>
+            <div class="flex justify-end space-x-2">
+              <button class="px-4 py-2 bg-blue-500 text-white rounded" onclick="this.closest('.fixed').classList.add('animate-out', 'fade-out'); setTimeout(() => { this.closest('.fixed').remove(); resolve(true); }, 250);">Continue</button>
+              <button class="px-4 py-2 bg-gray-200 rounded" onclick="this.closest('.fixed').classList.add('animate-out', 'fade-out'); setTimeout(() => { this.closest('.fixed').remove(); resolve(false); }, 250);">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(dialog);
+      (window as any).resolve = resolve;
+
+      const handleEscapeKey = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          dialog.querySelector('.fixed')?.classList.add('animate-out', 'fade-out');
+          setTimeout(() => {
+            dialog.remove();
+            resolve(false);
+          }, 250);
+          document.removeEventListener('keydown', handleEscapeKey);
+        }
+      };
+      document.addEventListener('keydown', handleEscapeKey);
+    });
+  };
+
+  const toggleCook = async (date: string) => {
+    try {
+      if (!currentUserId) throw new Error('No authenticated user');
+      if (!(await handleRestrictedAccess())) return;
+
+      const day = dinnerDays.find(d => d.date === date);
+      if (!day) throw new Error('Day not found');
+
+      const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(date).getDay());
+      const hasNoAttendeesOrCooks = (day.attendants?.length === 0 || !day.attendants) && (day.cooks?.length === 0 || !day.cooks);
+
+      if (isSuspendedDay && hasNoAttendeesOrCooks) {
+        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+        const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      let updateData: { cooks: string[]; ingredients?: string[]; attendants: Attendant[] } = {
+        cooks: [...(day.cooks || [])],
+        attendants: [...(day.attendants || [])]
+      };
+
+      if (updateData.cooks.includes(currentUserId)) {
+        // If the current user is a cook, remove them
+        updateData.cooks = updateData.cooks.filter(id => id !== currentUserId);
+
+        // Check if there are no other cooks
+        if (updateData.cooks.length === 0) {
+          // If there are no other cooks, also remove the ingredients
+          updateData.ingredients = [];
+        }
+      } else {
+        // If the current user is not a cook, add them
+        updateData.cooks.push(currentUserId);
+        // Also add them as an attendant if they're not already
+        if (!updateData.attendants.some(a => a.id === currentUserId)) {
+          // Fetch user metadata to get the correct portion count
+          const { data: userData, error: userDataError } = await supabase.rpc('get_user_metadata', { user_id: currentUserId });
+          if (userDataError) throw userDataError;
+          const userPortions = userData?.portions || 1;
+          updateData.attendants.push({ id: currentUserId, portions: userPortions, isTakeAway: false });
+        }
+      }
+
+      const { error } = await supabase
+        .from('dinner_days')
+        .upsert({
+          date: date,
+          ...updateData
+        });
+
+      if (error) throw error;
+
+      setDinnerDays(prevDays =>
+        prevDays.map(d =>
+          d.date === date ? { ...d, ...updateData } : d
+        )
+      );
+
+      // Fetch the updated data to ensure we have the latest state
+      await fetchDinnerDays();
+    } catch (error) {
+      console.error('Error toggling cook:', error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const updateIngredients = async (date: string, ingredient?: string, isChecked?: boolean) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('No authenticated user');
+      if (!(await handleRestrictedAccess())) return;
+
+      const currentUserId = user.id;
+
+      const day = dinnerDays.find(d => d.date === date);
+      if (!day) return;
+
+      const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(date).getDay());
+      const hasNoAttendeesOrCooks = (day.attendants?.length === 0 || !day.attendants) && (day.cooks?.length === 0 || !day.cooks);
+
+      if (isSuspendedDay && hasNoAttendeesOrCooks) {
+        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+        const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      let newIngredients = Array.isArray(day.ingredients) ? [...day.ingredients] : [];
+      if (!day.ingredients) {
+        day.ingredients = [];
+      }
+      if (ingredient !== undefined && isChecked !== undefined) {
+        newIngredients = isChecked
+          ? [...newIngredients, ingredient]
+          : newIngredients.filter(i => i !== ingredient);
+      }
+
+      let updateData: { date: string; ingredients: string[]; cooks: string[]; attendants: Attendant[] } = {
+        date: date,
+        ingredients: newIngredients,
+        cooks: [...(day.cooks || [])],
+        attendants: [...(day.attendants || [])]
+      };
+
+      // Only add the cook if it's not already there and there are ingredients
+      if (newIngredients.length > 0 && !updateData.cooks.includes(currentUserId)) {
+        updateData.cooks.push(currentUserId);
+        // Also add them as an attendant if they're not already
+        if (!updateData.attendants.some(a => a.id === currentUserId)) {
+          // Fetch user metadata to get the correct portion count
+          const { data: userData, error: userDataError } = await supabase.rpc('get_user_metadata', { user_id: currentUserId });
+          if (userDataError) throw userDataError;
+          const userPortions = userData?.portions || 1;
+          updateData.attendants.push({ id: currentUserId, portions: userPortions, isTakeAway: false });
+        }
+      }
+
+      const { error } = await supabase
+        .from('dinner_days')
+        .upsert(updateData);
+
+      if (error) {
+        throw error;
+      }
+
+      setDinnerDays(prevDays =>
+        prevDays.map(d =>
+          d.date === date ? { ...d, ...updateData } : d
+        )
+      );
+
+      // Fetch the updated data to ensure we have the latest state
+      fetchDinnerDays();
+    } catch (error) {
+      console.error('Error updating ingredients:', error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const toggleAttendance = async (date: string, isTakeAway: boolean = false) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('No authenticated user');
+      if (!(await handleRestrictedAccess())) return;
+
+      const currentUserId = user.id;
+
+      // Fetch user's default portions from metadata using RPC
+      const { data: userData, error: userDataError } = await supabase.rpc('get_user_metadata', { user_id: currentUserId });
+
+      if (userDataError) throw userDataError;
+
+      const userPortions = userData?.portions || 1;
+
+      // First, try to fetch the existing day
+      const { data: existingDay, error: fetchError } = await supabase
+        .from('dinner_days')
+        .select('attendants, cooks, ingredients')
+        .eq('date', date)
+        .single();
+
+      let attendants: Attendant[] = [];
+      let cooks: string[] = [];
+      let ingredients: string[] = [];
+
+      if (fetchError && fetchError.code === 'PGRST116') {
+        // Day doesn't exist, we'll create a new one
+        console.log('Creating new dinner day');
+      } else if (fetchError) {
+        throw fetchError;
+      } else {
+        // Day exists, use its data
+        attendants = existingDay.attendants || [];
+        cooks = existingDay.cooks || [];
+        ingredients = existingDay.ingredients || [];
+      }
+
+      const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(date).getDay());
+      const hasNoAttendeesOrCooks = attendants.length === 0 && cooks.length === 0;
+
+      if (isSuspendedDay && hasNoAttendeesOrCooks) {
+        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+        const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      const existingAttendantIndex = attendants.findIndex(a => a.id === currentUserId);
+
+      if (existingAttendantIndex !== -1) {
+        // Remove existing attendance
+        attendants = attendants.filter(a => a.id !== currentUserId);
+      } else {
+        // Add new attendance
+        attendants.push({
+          id: currentUserId,
+          portions: userPortions,
+          isTakeAway
+        });
+      }
+
+      const { error: upsertError } = await supabase
+        .from('dinner_days')
+        .upsert({ date, attendants, cooks, ingredients });
+
+      if (upsertError) throw upsertError;
+
+      // Update the local state immediately
+      setDinnerDays(prevDays =>
+        prevDays.map(d =>
+          d.date === date ? { ...d, attendants, cooks, ingredients } : d
+        )
+      );
+
+      // Fetch the updated data to ensure we have the latest state
+      await fetchDinnerDays();
+    } catch (error) {
+      console.error('Error updating attendance:', error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const updateGuestAttendance = async (date: string, guestCount: number) => {
+    try {
+      // First, try to fetch the existing day
+      const { data: existingDay, error: fetchError } = await supabase
+        .from('dinner_days')
+        .select('attendants, cooks, ingredients')
+        .eq('date', date)
+        .single();
+
+      let attendants: Attendant[] = [];
+      let cooks: string[] = [];
+      let ingredients: string[] = [];
+
+      if (fetchError && fetchError.code === 'PGRST116') {
+        // Day doesn't exist, we'll create a new one
+        console.log('Creating new dinner day for guest attendance');
+      } else if (fetchError) {
+        throw fetchError;
+      } else {
+        // Day exists, use its data
+        attendants = existingDay.attendants || [];
+        cooks = existingDay.cooks || [];
+        ingredients = existingDay.ingredients || [];
+      }
+
+      // Remove existing guests
+      const nonGuestAttendants = attendants.filter(a => !a.id.startsWith('guest-'));
+
+      // Add new guests
+      const newGuests = Array.from({ length: guestCount }, (_, i) => ({
+        id: `guest-${i + 1}`,
+        portions: 1,
+        isTakeAway: false
+      }));
+
+      const updatedAttendants = [...nonGuestAttendants, ...newGuests];
+
+      const { error: upsertError } = await supabase
+        .from('dinner_days')
+        .upsert({ date, attendants: updatedAttendants, cooks, ingredients });
+
+      if (upsertError) throw upsertError;
+
+      // Update the local state immediately
+      setDinnerDays(prevDays =>
+        prevDays.map(d =>
+          d.date === date ? { ...d, attendants: updatedAttendants, cooks, ingredients } : d
+        )
+      );
+
+      // Fetch the updated data to ensure we have the latest state
+      await fetchDinnerDays();
+    } catch (error) {
+      console.error('Error updating guest attendance:', error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const changeWeek = (increment: number) => {
+    setStartDate(prevDate => {
+      const newDate = new Date(prevDate);
+      newDate.setDate(newDate.getDate() + (increment * 28)); // 4 weeks * 7 days
+      return newDate;
+    });
+  };
+
+  return (
+    <Card className="overflow-x-auto">
+      <CardHeader className="card-header">
+        <div className="flex justify-between items-center">
+          <CardTitle>Dinner</CardTitle>
+          <div className="flex items-center space-x-2">
+            <Button onClick={() => changeWeek(-1)}>&lt;</Button>
+            <div className="text-lg font-semibold">
+              {startDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })} - {
+                new Date(startDate.getTime() + 27 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
+              }
+            </div>
+            <Button onClick={() => changeWeek(1)}>&gt;</Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0 card-content">
+        <div className="flex flex-col">
+          <div ref={tableHeaderRef} className="flex bg-gray-100 font-bold border-t border-gray-300" style={fixedHeaderStyle}>
+            <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-b border-r border-gray-300">Day</div>
+            <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-b border-r border-gray-300">Chef</div>
+            <div className="flex-1 p-2 border-b border-r border-gray-300">Ingredients</div>
+            <div className="flex-1 p-2 border-b border-gray-300">Attendants</div>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {dinnerDays.map((day, index) => (
+              <div
+                key={`${day.date}-${index}`}
+                id={`day-${day.date}`}
+                style={{
+                  backgroundColor: isDaySuspended(new Date(day.date))
+                    ? 'rgba(229, 231, 235, 0.7)' // Lighter gray with transparency
+                    : 'transparent',
+                  minHeight: '80px'
+                }}
+                className={`flex border-b border-gray-300 ${new Date(day.date).toDateString() === new Date().toDateString()
+                  ? 'current-day-overlay'
+                  : ''
+                  }`}
+              >
+                <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-r border-gray-300 flex flex-col justify-center">
+                  <div className="text-lg">{new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(day.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
+                  </div>
+                </div>
+                <div
+                  className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-r border-gray-300 cursor-pointer flex items-center"
+                  onClick={() => toggleCook(day.date)}
+                >
+                  {day.cooks && day.cooks.length > 0 ? (
+                    <div className="flex items-center justify-between">
+                      {day.cooks.map((cookId) => (
+                        <SimpleUserIcon
+                          key={cookId}
+                          user={users.find(user => user.id === cookId) || { id: cookId, raw_user_meta_data: {} }}
+                          showRemoveButton={cookId === currentUserId}
+                          onRemove={() => toggleCook(day.date)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-base text-gray-400 w-full h-full flex items-center justify-center">Cook</span>
+                  )}
+                </div>
+                <div className="flex-1 p-2 border-r border-gray-300 relative group">
+                  <Popover onOpenChange={handlePopoverOpenChange}>
+                    <PopoverTrigger asChild>
+                      <div className="cursor-pointer h-full w-full flex items-center" onClick={(e) => {
+                        e.stopPropagation();
+                        updateIngredients(day.date);
+                      }}>
+                        <div className="flex flex-wrap items-center gap-1 md:gap-2">
+                          {(day.ingredients || []).length > 0 ? (
+                            (day.ingredients || []).map((ingredient, index) => (
+                              <span key={index} className="inline-flex items-center">
+                                {React.cloneElement(ingredientIcons[ingredient] || <span>{ingredient}</span>, {
+                                  className: 'w-7 h-auto md:w-12 md:h-auto'
+                                })}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-base text-gray-400">None</span>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full w-8 h-8 p-0 bg-green-500 hover:bg-green-600 text-white"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                          </svg>
+                        </Button>
+                      </div>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[100vw] md:w-96 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0"
+                      onOpenAutoFocus={(e) => e.preventDefault()}
+                    >
+                      <div className="relative z-50 bg-white rounded-lg">
+                        <div className="flex justify-between items-center mb-4">
+                          <h4 className="font-bold leading-none">Ingredients</h4>
+                          <button
+                            onClick={closePopover}
+                            className="text-gray-500 hover:text-gray-700 font-bold text-xl"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {[
+                            ['Beef', 'Pork', 'Chicken', 'Fish', 'Minced Meat'],
+                            ['Rice', 'Potatoes', 'Pasta', 'Bread'],
+                            ['Salad', 'Cheese']
+                          ].map((column, columnIndex) => (
+                            <div key={columnIndex} className="space-y-2">
+                              {column.map((ingredientName) => (
+                                <div
+                                  key={ingredientName}
+                                  className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-colors duration-200 ${day.ingredients.includes(ingredientName)
+                                    ? 'bg-blue-100 hover:bg-blue-200'
+                                    : 'hover:bg-gray-100'
+                                    }`}
+                                  onClick={() => {
+                                    updateIngredients(day.date, ingredientName, !day.ingredients.includes(ingredientName));
+                                  }}
+                                >
+                                  <span className="w-10 h-10 flex items-center justify-center">
+                                    {ingredientIcons[ingredientName]}
+                                  </span>
+                                  <span>{ingredientName}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div
+                  className="flex-1 p-2 relative cursor-pointer"
+                  onClick={(e) => {
+                    // Prevent click if it's on the guest button
+                    if (!(e.target as HTMLElement).closest('.guest-button')) {
+                      const currentAttendant = day.attendants.find(a => a.id === currentUserId);
+                      toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
+                    }
+                  }}
+                >
+                  <div className="w-full h-full flex items-center">
+                    {day.attendants.length > 0 ? (
+                      <div className="flex items-center w-full h-full">
+                        <span className="mr-2 px-2 py-1 text-sm font-bold bg-gray-100 rounded">
+                          {day.attendants.reduce((total, attendant) => {
+                            if (attendant.id.startsWith('guest-')) {
+                              return total + 1; // Count guests as 1 portion each
+                            }
+                            return total + (Number(attendant.portions) || 0);
+                          }, 0)}
+                        </span>
+                        <div className="flex items-center -space-x-2 h-full overflow-hidden flex-grow">
+                          {day.attendants
+                            .filter(attendant => !attendant.id.startsWith('guest-'))
+                            .map((attendant) => (
+                              <SimpleUserIcon
+                                key={attendant.id}
+                                user={users.find(user => user.id === attendant.id) || { id: attendant.id, raw_user_meta_data: {} }}
+                                isTakeAway={attendant.isTakeAway}
+                                showRemoveButton={attendant.id === currentUserId}
+                                onRemove={() => toggleAttendance(day.date, attendant.isTakeAway)}
+                              />
+                            ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-base text-gray-400 w-full h-full flex items-center">None</span>
+                    )}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="rounded-full w-8 h-8 md:w-12 md:h-12 p-0 absolute right-2 top-1/2 transform -translate-y-1/2 guest-button flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const guestCount = day.attendants.filter(a => a.id.startsWith('guest-')).length;
+                            setGuestCount(guestCount);
+                          }}
+                        >
+                          {day.attendants.some(a => a.id.startsWith('guest-')) ? (
+                            <span className="text-blue-500 font-bold text-sm md:text-lg flex items-center justify-center w-full h-full">
+                              {day.attendants.filter(a => a.id.startsWith('guest-')).length}G
+                            </span>
+                          ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 md:w-6 md:h-6">
+                              <line x1="12" y1="5" x2="12" y2="19"></line>
+                              <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-60">
+                        <div className="grid gap-4">
+                          <div className="flex justify-between items-center">
+                            <h4 className="font-bold leading-none">Guests</h4>
+                            <button
+                              onClick={() => {
+                                const popoverTrigger = document.querySelector('[data-state="open"]');
+                                if (popoverTrigger instanceof HTMLElement) {
+                                  popoverTrigger.click();
+                                }
+                              }}
+                              className="text-gray-500 hover:text-gray-700 font-bold text-xl"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="number"
+                              value={guestCount}
+                              onChange={(e) => {
+                                const newGuestCount = parseInt(e.target.value) || 0;
+                                setGuestCount(newGuestCount);
+                              }}
+                              onBlur={async () => {
+                                const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(day.date).getDay());
+                                const hasNoAttendeesOrCooks = (day.attendants?.length === 0 || !day.attendants) && (day.cooks?.length === 0 || !day.cooks);
+
+                                if (isSuspendedDay && hasNoAttendeesOrCooks) {
+                                  const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' });
+                                  const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
+                                  if (!confirmed) {
+                                    setGuestCount(0);
+                                    return;
+                                  }
+                                }
+                                updateGuestAttendance(day.date, guestCount);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === 'Escape') {
+                                  e.currentTarget.blur();
+                                  const popoverTrigger = document.querySelector('[data-state="open"]');
+                                  if (popoverTrigger instanceof HTMLElement) {
+                                    popoverTrigger.click();
+                                  }
+                                }
+                              }}
+                              autoFocus
+                              onFocus={(e) => e.target.select()}
+                              min={0}
+                            />
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+      <div className="flex justify-center mt-4 mb-4 space-x-4">
+        <Button onClick={() => changeWeek(-1)}>Previous 4 Weeks</Button>
+        <Button onClick={() => changeWeek(1)}>Next 4 Weeks</Button>
+      </div>
+    </Card>
+  );
+};
+
+export default Dinner;

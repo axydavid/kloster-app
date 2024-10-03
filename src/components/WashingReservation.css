@@ -1,0 +1,129 @@
+.hide-allday-cell .rbc-allday-cell {
+  display: none;
+}
+
+.rbc-toolbar {
+  height: 0;
+  overflow: hidden;
+}
+
+.custom-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rbc-time-slot.selected-time {
+  background-color: #949494 !important;
+  border: none;
+}
+
+.rbc-event {
+  width: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  border: none !important;
+  z-index: 20;
+}
+
+.rbc-time-gutter .rbc-time-slot {
+  background-color: inherit !important;
+  border: none !important;
+  color: inherit !important;
+}
+
+.rbc-time-gutter .rbc-time-slot + button {
+display:none;
+}
+
+.rbc-time-gutter .rbc-time-slot::after {
+  display: none;
+}
+
+.selected-time.first-selected-cell {
+  position: relative;
+}
+
+.selected-time.first-selected-cell::after {
+  content: attr(title);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: transparent;
+  color: white;
+  padding: 2px 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* z-index: 1; */
+}
+
+.time-input-24::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+.time-input-24::-webkit-datetime-edit-ampm-field {
+  display: none;
+}
+
+.time-input-24 {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.selected-time.last-selected-cell {
+  position: relative;
+}
+
+.rbc-event-content {
+  position: relative;
+}
+
+.rbc-event-content button {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  opacity: 1;
+}
+
+.rbc-time-column{
+  margin-bottom: -41px;
+}
+
+.rbc-time-content{
+  overflow: hidden;
+}
+.rbc-events-container{
+  margin-right: 0 !important;
+}
+
+.reserve-time-button {
+  transition: all 0.3s ease;
+}
+
+.reserve-time-button.reserved {
+  background-color: #22c55e !important; /* green-500 */
+  color: white !important;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.reserve-time-button.reserved {
+  opacity: 1;
+}
+
+.reserve-time-button.fade-out {
+  animation: fadeOut 5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
