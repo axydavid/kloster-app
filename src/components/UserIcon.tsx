@@ -10,9 +10,10 @@ const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.R
 
 interface UserIconProps {
   session: Session;
+  isAdmin: boolean;
 }
 
-const UserIcon: React.FC<UserIconProps> = ({ session }) => {
+const UserIcon: React.FC<UserIconProps> = ({ session, isAdmin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const user = session.user;
@@ -43,12 +44,14 @@ const UserIcon: React.FC<UserIconProps> = ({ session }) => {
               Settings
             </Link>
           </Button>
-          <Button variant="ghost" asChild className="justify-start" onClick={() => setIsOpen(false)}>
-            <Link to="/admin" className="flex items-center w-full px-2 py-1.5">
-              <ShieldCheck className="mr-2 h-4 w-4" />
-              Admin
-            </Link>
-          </Button>
+          {isAdmin && (
+            <Button variant="ghost" asChild className="justify-start" onClick={() => setIsOpen(false)}>
+              <Link to="/admin" className="flex items-center w-full px-2 py-1.5">
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Admin
+              </Link>
+            </Button>
+          )}
           <Button variant="ghost" asChild className="justify-start cursor-pointer" onClick={handleLogout}>
             <div className="flex items-center w-full px-2 py-1.5">
               <LogOut className="mr-2 h-4 w-4" />
