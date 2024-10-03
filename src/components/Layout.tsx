@@ -23,36 +23,27 @@ export const UserContext = createContext<UserData[]>([]);
 
 interface LayoutProps {
   session: Session | null;
+  isAdmin: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ session }) => {
+const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
   const location = useLocation();
   const [users, setUsers] = useState<UserData[]>([]);
   const [logoColor, setLogoColor] = useState('#ffffff'); // Default color
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const fetchAllUsers = useCallback(async () => {
-    const { data, error } = await supabase.rpc('get_all_users');
-    if (error) {
-      console.error('Error fetching all users:', error);
-    } else {
-      setUsers(data || []);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchAllUsers();
-  }, [fetchAllUsers]);
-
-  useEffect(() => {
-    if (session?.user) {
-      const currentUser = users.find(u => u.id === session.user.id);
-      if (currentUser) {
-        setIsAdmin(currentUser.type === 'admin');
+    const fetchAllUsers = async () => {
+      const { data, error } = await supabase.rpc('get_all_users');
+      if (error) {
+        console.error('Error fetching all users:', error);
+      } else {
+        setUsers(data || []);
       }
-    }
-  }, [session, users]);
+    };
+
+    fetchAllUsers();
+  }, []);
 
   const isActive = (path: string) => {
     return location.pathname === path ? "bg-primary-foreground text-primary" : "";
