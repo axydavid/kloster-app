@@ -126,7 +126,7 @@ const Layout: React.FC<LayoutProps> = ({ session }) => {
                 {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
               {session && (
-                <UserIcon session={session} />
+                <UserIcon session={session} isAdmin={isAdmin} />
               )}
             </div>
           </nav>
