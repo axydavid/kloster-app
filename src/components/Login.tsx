@@ -35,8 +35,6 @@ const Login: React.FC = () => {
         result = await supabase.auth.signInWithPassword({ email, password });
       }
       
-      console.log('Auth result:', result);
-
       if (result.error) throw result.error;
       
       if (isSignUp) {
@@ -58,10 +56,10 @@ const Login: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background">
       <div className="mb-8 text-center">
-        <Link to="/" className="flex flex-col items-center">
+        <div className="flex flex-col items-center">
           <Logo className="h-16 w-auto mb-2" style={{ fill: logoColor }} />
           <span className="text-3xl font-bold" style={{ color: logoColor }}>KlosterApp</span>
-        </Link>
+        </div>
       </div>
       <div className="w-full max-w-md p-4 space-y-4">
         <Card className="w-full">
