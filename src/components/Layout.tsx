@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import UserIcon from './UserIcon';
 import { Button } from "./ui/button"
-import { LayoutDashboard, UtensilsCrossed, WashingMachine, Wallet, Calculator, Menu, X, BedDouble } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, WashingMachine, ShieldCheck, Wallet, Calculator, Menu, X, BedDouble } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { ReactComponent as Logo } from '../icons/logo.svg';
 
