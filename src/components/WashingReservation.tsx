@@ -901,7 +901,6 @@ const WashingReservation: React.FC = () => {
         </CardContent>
       </Card>
     </div>
-    </>
   );
 };
 
