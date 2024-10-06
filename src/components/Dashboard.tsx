@@ -444,7 +444,7 @@ const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               {bookings.map((booking) => (
-                <Card key={booking.id} className="mb-6 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <Card key={booking.id} className="mb-6">
                   <CardContent className="p-6 relative">
                     <Button
                       onClick={() => handleDeleteBooking(booking.id)}
