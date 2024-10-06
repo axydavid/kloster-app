@@ -594,12 +594,12 @@ const WashingReservation: React.FC = () => {
 
   return (
     <>
-      <style jsx>{`
+      <style>{`
         @media (max-width: 768px) {
-          .calendar-container :global(.rbc-calendar) {
+          .calendar-container .rbc-calendar {
             padding: 0;
           }
-          .calendar-container :global(.rbc-header) {
+          .calendar-container .rbc-header {
             padding: 0 !important;
           }
         }
