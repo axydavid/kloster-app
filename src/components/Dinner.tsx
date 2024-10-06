@@ -193,7 +193,7 @@ const Dinner: React.FC = () => {
           tableHeaderRef.current.classList.add('fixed', 'top-0', 'z-10', 'border-x');
           if (isMobile) {
             tableHeaderRef.current.classList.add('left-0');
-            tableHeaderRef.classList.remove('left-4');
+            tableHeaderRef.current.classList.remove('left-4');
             tableHeaderRef.current.style.width = '100%';
           } else {
             tableHeaderRef.current.classList.add('left-4');
