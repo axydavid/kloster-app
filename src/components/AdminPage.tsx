@@ -86,102 +86,112 @@ const AdminPage: React.FC = () => {
             <CardTitle>Admin Settings</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-4">
-                <div>
-                  <Label htmlFor="washingStartHour">Washing Start Hour</Label>
-                  <Input
-                    id="washingStartHour"
-                    type="number"
-                    value={settings.washingStartHour}
-                    onChange={(e) => setSettings({...settings, washingStartHour: parseInt(e.target.value)})}
-                    min={0}
-                    max={23}
-                    className="max-w-[200px]"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="washingEndHour">Washing End Hour</Label>
-                  <Input
-                    id="washingEndHour"
-                    type="number"
-                    value={settings.washingEndHour}
-                    onChange={(e) => setSettings({...settings, washingEndHour: parseInt(e.target.value)})}
-                    min={0}
-                    max={23}
-                    className="max-w-[200px]"
-                  />
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Washing Machine Hours</h3>
+                <div className="flex flex-wrap gap-4">
+                  <div>
+                    <Label htmlFor="washingStartHour">Washing Start Hour</Label>
+                    <Input
+                      id="washingStartHour"
+                      type="number"
+                      value={settings.washingStartHour}
+                      onChange={(e) => setSettings({...settings, washingStartHour: parseInt(e.target.value)})}
+                      min={0}
+                      max={23}
+                      className="max-w-[200px]"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="washingEndHour">Washing End Hour</Label>
+                    <Input
+                      id="washingEndHour"
+                      type="number"
+                      value={settings.washingEndHour}
+                      onChange={(e) => setSettings({...settings, washingEndHour: parseInt(e.target.value)})}
+                      min={0}
+                      max={23}
+                      className="max-w-[200px]"
+                    />
+                  </div>
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-4">
-                <div>
-                  <Label htmlFor="budgetPerMeal">Budget per meal</Label>
-                  <Input
-                    id="budgetPerMeal"
-                    type="number"
-                    value={settings.budgetPerMeal}
-                    onChange={(e) => setSettings({...settings, budgetPerMeal: parseFloat(e.target.value)})}
-                    className="max-w-[200px]"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="budgetPerLaundry">Budget per laundry</Label>
-                  <Input
-                    id="budgetPerLaundry"
-                    type="number"
-                    value={settings.budgetPerLaundry}
-                    onChange={(e) => setSettings({...settings, budgetPerLaundry: parseFloat(e.target.value)})}
-                    className="max-w-[200px]"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="currencyType">Currency Type</Label>
-                  <Select
-                    value={settings.currencyType}
-                    onValueChange={(value) => setSettings({...settings, currencyType: value})}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="$">$</SelectItem>
-                      <SelectItem value=":-">:-</SelectItem>
-                      <SelectItem value="€">€</SelectItem>
-                      <SelectItem value="£">£</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                <div>
-                  <Label htmlFor="churchStartHour">Church Start Hour</Label>
-                  <Input
-                    id="churchStartHour"
-                    type="number"
-                    value={settings.churchStartHour}
-                    onChange={(e) => setSettings({...settings, churchStartHour: parseInt(e.target.value)})}
-                    min={0}
-                    max={23}
-                    className="max-w-[200px]"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="churchEndHour">Church End Hour</Label>
-                  <Input
-                    id="churchEndHour"
-                    type="number"
-                    value={settings.churchEndHour}
-                    onChange={(e) => setSettings({...settings, churchEndHour: parseInt(e.target.value)})}
-                    min={0}
-                    max={23}
-                    className="max-w-[200px]"
-                  />
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Budget Settings</h3>
+                <div className="flex flex-wrap gap-4">
+                  <div>
+                    <Label htmlFor="budgetPerMeal">Budget per meal</Label>
+                    <Input
+                      id="budgetPerMeal"
+                      type="number"
+                      value={settings.budgetPerMeal}
+                      onChange={(e) => setSettings({...settings, budgetPerMeal: parseFloat(e.target.value)})}
+                      className="max-w-[200px]"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="budgetPerLaundry">Budget per laundry</Label>
+                    <Input
+                      id="budgetPerLaundry"
+                      type="number"
+                      value={settings.budgetPerLaundry}
+                      onChange={(e) => setSettings({...settings, budgetPerLaundry: parseFloat(e.target.value)})}
+                      className="max-w-[200px]"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="currencyType">Currency Type</Label>
+                    <Select
+                      value={settings.currencyType}
+                      onValueChange={(value) => setSettings({...settings, currencyType: value})}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="$">$</SelectItem>
+                        <SelectItem value=":-">:-</SelectItem>
+                        <SelectItem value="€">€</SelectItem>
+                        <SelectItem value="£">£</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
               <div>
+                <h3 className="text-lg font-semibold mb-2">Church Hours</h3>
+                <div className="flex flex-wrap gap-4">
+                  <div>
+                    <Label htmlFor="churchStartHour">Church Start Hour</Label>
+                    <Input
+                      id="churchStartHour"
+                      type="number"
+                      value={settings.churchStartHour}
+                      onChange={(e) => setSettings({...settings, churchStartHour: parseInt(e.target.value)})}
+                      min={0}
+                      max={23}
+                      className="max-w-[200px]"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="churchEndHour">Church End Hour</Label>
+                    <Input
+                      id="churchEndHour"
+                      type="number"
+                      value={settings.churchEndHour}
+                      onChange={(e) => setSettings({...settings, churchEndHour: parseInt(e.target.value)})}
+                      min={0}
+                      max={23}
+                      className="max-w-[200px]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Lunch Schedule</h3>
                 <Label>Suspended Weekdays for Lunch</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
