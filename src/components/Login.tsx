@@ -89,6 +89,7 @@ const Login: React.FC = () => {
                   />
                 </div>
               </div>
+              <input type="submit" style={{ display: 'none' }} />
             </form>
           </CardContent>
           <CardFooter className="flex justify-between">
