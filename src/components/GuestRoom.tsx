@@ -259,7 +259,7 @@ const GuestRoom: React.FC = () => {
     });
 
     if (overlap) {
-      await showConfirmationDialog('This booking overlaps with an existing reservation by more than one day.');
+      await showConfirmationDialog('This booking overlaps with an existing reservation.');
       return;
     }
 
