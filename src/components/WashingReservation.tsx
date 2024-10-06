@@ -625,9 +625,9 @@ const WashingReservation: React.FC = () => {
       `}</style>
       <div className="max-w-3xl mx-auto">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
             <CardTitle>Washing Reservation</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground whitespace-nowrap">
               Washing Times: {washingStartHour}:00 - {washingEndHour}:00
             </p>
           </CardHeader>
