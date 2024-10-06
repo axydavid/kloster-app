@@ -803,11 +803,11 @@ const WashingReservation: React.FC = () => {
             `}</style>
           <div className="custom-toolbar">
             <Button onClick={handlePreviousWeek}>&lt;</Button>
-            <span>
-              {moment(currentDate).startOf('week').format('MMM D')} - {moment(currentDate).endOf('week').format('MMM D, YYYY')}
-              {moment(currentDate).isSame(moment(), 'week') ? ' (current week)' :
-                moment(currentDate).isSame(moment().add(1, 'week'), 'week') ? ' (next week)' :
-                  moment(currentDate).isSame(moment().subtract(1, 'week'), 'week') ? ' (last week)' : ''}
+            <span className="flex flex-wrap items-center justify-center">
+              <span>{moment(currentDate).startOf('week').format('MMM D')} - {moment(currentDate).endOf('week').format('MMM D, YYYY')}</span>
+              {moment(currentDate).isSame(moment(), 'week') && <span className="whitespace-nowrap">&nbsp;(current week)</span>}
+              {moment(currentDate).isSame(moment().add(1, 'week'), 'week') && <span className="whitespace-nowrap">&nbsp;(next week)</span>}
+              {moment(currentDate).isSame(moment().subtract(1, 'week'), 'week') && <span className="whitespace-nowrap">&nbsp;(last week)</span>}
             </span>
             <Button onClick={handleNextWeek}>&gt;</Button>
           </div>
