@@ -792,6 +792,15 @@ const WashingReservation: React.FC = () => {
             <CardTitle>Washing Calendar</CardTitle>
           </CardHeader>
           <CardContent className="h-full calendar-container">
+            <style>{`
+              @media (max-width: 768px) {
+                .calendar-container .rbc-calendar {
+                  margin-left: -1rem;
+                  margin-right: -1rem;
+                  width: calc(100% + 2rem);
+                }
+              }
+            `}</style>
           <div className="custom-toolbar">
             <Button onClick={handlePreviousWeek}>&lt;</Button>
             <span>
