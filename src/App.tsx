@@ -60,7 +60,7 @@ function App() {
           <Route path="/budget" element={session ? <Budget isAdmin={isAdmin} /> : <Navigate to="/login" />} />
           <Route path="/accounting" element={session && isAdmin ? <Accounting /> : <Navigate to="/dashboard" />} />
           <Route path="/guest-room" element={session ? <GuestRoom /> : <Navigate to="/login" />} />
-          <Route path="/guest-hospitality" element={session ? <GuestHospitality /> : <Navigate to="/login" />} />
+          <Route path="/guest-hospitality" element={session && isAdmin ? <GuestHospitality /> : <Navigate to="/dashboard" />} />
           <Route path="/" element={<Navigate to="/dashboard" />} />
         </Route>
       </Routes>

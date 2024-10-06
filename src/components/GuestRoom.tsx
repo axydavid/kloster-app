@@ -439,13 +439,11 @@ const GuestRoom: React.FC = () => {
             <div className="flex justify-between items-center mb-4">
               <Button onClick={() => setCurrentDate(prevMonth(currentDate))}>
                 <ChevronLeft className="w-5 h-5" />
-                Previous Month
               </Button>
               <span className="text-lg font-semibold">
                 {format(currentDate, 'MMMM yyyy')}
               </span>
               <Button onClick={() => setCurrentDate(nextMonth(currentDate))}>
-                Next Month
                 <ChevronRight className="w-5 h-5" />
               </Button>
             </div>
