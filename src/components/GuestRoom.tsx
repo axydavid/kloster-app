@@ -438,7 +438,8 @@ const GuestRoom: React.FC = () => {
                 </span>
                 <Button
                   variant="destructive"
-                  size="sm"
+                  size="icon"
+                  className="rounded-full w-8 h-8"
                   onClick={() => {
                     handleDeleteReservation(selectedReservation.id);
                     setSelectedReservation(null);
