@@ -603,6 +603,25 @@ const WashingReservation: React.FC = () => {
             padding: 0 !important;
           }
         }
+        .selected-time.first-selected-cell::after {
+          content: attr(title);
+          position: absolute;
+          top: 0;
+          left: 0;
+          background-color: hsl(var(--primary) / 80%);
+          color: hsl(var(--primary-foreground));
+          font-size: 0.75rem;
+          z-index: 1;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        @media (max-width: 768px) {
+          .selected-time.first-selected-cell::after {
+            white-space: normal;
+            word-break: break-word;
+          }
+        }
       `}</style>
       <div className="max-w-3xl mx-auto">
         <Card>
