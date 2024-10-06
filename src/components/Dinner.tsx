@@ -190,10 +190,16 @@ const Dinner: React.FC = () => {
         const cardContent = tableHeaderRef.current.closest('.card-content');
         const cardContentTop = cardContent ? cardContent.getBoundingClientRect().top : 0;
         if (window.scrollY > cardContentTop) {
-          tableHeaderRef.current.classList.add('fixed', 'top-0', 'left-4', 'z-10', 'border-x');
-          tableHeaderRef.current.style.width = 'calc(100% - 2rem)'; // Decrease width by 2rem (4 units of padding)
+          tableHeaderRef.current.classList.add('fixed', 'top-0', 'z-10', 'border-x');
+          if (isMobile) {
+            tableHeaderRef.current.classList.add('left-0');
+            tableHeaderRef.current.style.width = '100%';
+          } else {
+            tableHeaderRef.current.classList.add('left-4');
+            tableHeaderRef.current.style.width = 'calc(100% - 2rem)';
+          }
         } else {
-          tableHeaderRef.current.classList.remove('fixed', 'top-0', 'left-4', 'z-10', 'border-x');
+          tableHeaderRef.current.classList.remove('fixed', 'top-0', 'left-0', 'left-4', 'z-10', 'border-x');
           tableHeaderRef.current.style.width = '100%';
         }
       }
