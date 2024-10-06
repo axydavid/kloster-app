@@ -240,6 +240,7 @@ const GuestRoom: React.FC = () => {
     }
 
     const now = new Date();
+    now.setHours(0, 0, 0, 0);  // Set to start of day for accurate comparison
     if (startDate < now) {
       await showConfirmationDialog("You cannot book a time slot in the past. Please select a future time slot.");
       return;
@@ -351,7 +352,7 @@ const GuestRoom: React.FC = () => {
                 placeholderText="Select date range"
                 className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                 dateFormat="dd MMM yyyy"
-                minDate={new Date()}  // Prevent selecting dates before today
+                minDate={new Date().setHours(0, 0, 0, 0)}  // Allow selecting from the start of today
                 renderCustomHeader={({
                   date,
                   decreaseMonth,
