@@ -33,7 +33,11 @@ interface User {
   };
 }
 
-const Budget: React.FC = () => {
+interface BudgetProps {
+  isAdmin: boolean;
+}
+
+const Budget: React.FC<BudgetProps> = ({ isAdmin }) => {
   const navigate = useNavigate();
   const [amount, setAmount] = useState<string>('');
   const [selectedUser, setSelectedUser] = useState<string>('');
@@ -238,9 +242,11 @@ const Budget: React.FC = () => {
               Guest Hospitality Fund
               <div className="ml-auto flex items-center">
                 <span className="mr-2">Fund: <span className="font-bold">{guestHospitalityFund.toFixed(0)} :-</span></span>
-                <Button onClick={() => navigate('/guest-hospitality')} size="sm">
-                  Details
-                </Button>
+                {isAdmin && (
+                  <Button onClick={() => navigate('/guest-hospitality')} size="sm">
+                    Details
+                  </Button>
+                )}
               </div>
             </CardTitle>
           </CardHeader>
