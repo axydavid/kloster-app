@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
-import { ChevronLeft, ChevronRight, X, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Toast from './Toast';
 import { format, addMonths, subMonths } from 'date-fns';
 
@@ -444,7 +444,7 @@ const GuestRoom: React.FC = () => {
                     setSelectedReservation(null);
                   }}
                 >
-                  <Trash2 size={16} />
+                  <X size={16} />
                 </Button>
               </div>
             ) : null}
