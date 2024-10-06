@@ -594,6 +594,17 @@ const WashingReservation: React.FC = () => {
 
   return (
     <>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .calendar-container :global(.rbc-calendar) {
+            padding: 0;
+          }
+          .calendar-container :global(.rbc-header) {
+            padding: 0 !important;
+          }
+        }
+      `}</style>
+    <>
       <div className="max-w-3xl mx-auto">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -781,7 +792,7 @@ const WashingReservation: React.FC = () => {
           <CardHeader>
             <CardTitle>Washing Calendar</CardTitle>
           </CardHeader>
-          <CardContent className="h-full">
+          <CardContent className="h-full calendar-container">
           <div className="custom-toolbar">
             <Button onClick={handlePreviousWeek}>&lt;</Button>
             <span>
@@ -812,7 +823,12 @@ const WashingReservation: React.FC = () => {
                 timeGutterFormat: formatTimeSlot,
                 eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
                   `${formatTimeSlot(start)} - ${formatTimeSlot(end)}`,
-                dayFormat: (date: Date) => `${localizer.format(date, 'D')} - ${localizer.format(date, 'ddd')}`,
+                dayFormat: (date: Date) => {
+                  const isMobile = window.innerWidth <= 768; // Adjust this breakpoint as needed
+                  return isMobile
+                    ? `${localizer.format(date, 'ddd')}`
+                    : `${localizer.format(date, 'D')} - ${localizer.format(date, 'ddd')}`;
+                },
               }}
               step={60}
               timeslots={1}
