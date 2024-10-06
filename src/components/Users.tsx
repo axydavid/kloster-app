@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -140,89 +139,83 @@ const Users: React.FC = () => {
     }
   };
 
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Users</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleAddUser} className="flex items-end space-x-2 mb-4">
-          <div className="flex-1">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              type="text"
-              value={newUserName}
-              onChange={(e) => setNewUserName(e.target.value)}
-              required
-            />
+    <div className="space-y-4">
+      <form onSubmit={handleAddUser} className="flex items-end space-x-2 mb-4">
+        <div className="flex-1">
+          <Label htmlFor="name">Name</Label>
+          <Input
+            id="name"
+            type="text"
+            value={newUserName}
+            onChange={(e) => setNewUserName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex-1">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            value={newUserEmail}
+            onChange={(e) => setNewUserEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex-1">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            value={newUserPassword}
+            onChange={(e) => setNewUserPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex-1">
+          <Label htmlFor="type">Type</Label>
+          <Select value={newUserType} onValueChange={setNewUserType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="user">User</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button type="submit">Add User</Button>
+      </form>
+      
+      {users.map((user: UserData) => (
+        <div key={user.id} className="flex items-center justify-between mb-4 p-2 border-b">
+          <div className="flex items-center">
+            <SimpleUserIcon user={user} size="small" />
+            <span className="ml-2">{user.raw_user_meta_data?.display_name || user.email}</span>
           </div>
-          <div className="flex-1">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={newUserEmail}
-              onChange={(e) => setNewUserEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex-1">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={newUserPassword}
-              onChange={(e) => setNewUserPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex-1">
-            <Label htmlFor="type">Type</Label>
-            <Select value={newUserType} onValueChange={setNewUserType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
+          <div className="flex items-center space-x-2">
+            <Select 
+              value={user.type} 
+              onValueChange={(newType) => handleUpdateUserType(user.id, newType)}
+            >
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="user">User</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
               </SelectContent>
             </Select>
+            <Button 
+              variant="destructive" 
+              onClick={() => handleDeleteUser(user.id)}
+            >
+              Delete
+            </Button>
           </div>
-          <Button type="submit">Add User</Button>
-        </form>
-        
-        {users.map((user: UserData) => (
-          <div key={user.id} className="flex items-center justify-between mb-4 p-2 border-b">
-            <div className="flex items-center">
-              <SimpleUserIcon user={user} size="small" />
-              <span className="ml-2">{user.raw_user_meta_data?.display_name || user.email}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Select 
-                value={user.type} 
-                onValueChange={(newType) => handleUpdateUserType(user.id, newType)}
-              >
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button 
-                variant="destructive" 
-                onClick={() => handleDeleteUser(user.id)}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+        </div>
+      ))}
+    </div>
   );
 };
 
