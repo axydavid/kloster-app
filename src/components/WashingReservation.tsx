@@ -608,7 +608,7 @@ const WashingReservation: React.FC = () => {
           position: absolute;
           top: 0;
           left: 0;
-          background-color: hsl(var(--primary) / 80%);
+          background-color: transparent;
           color: hsl(var(--primary-foreground));
           font-size: 0.75rem;
           z-index: 1;
