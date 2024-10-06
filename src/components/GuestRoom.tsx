@@ -239,6 +239,12 @@ const GuestRoom: React.FC = () => {
       return;
     }
 
+    const now = new Date();
+    if (startDate < now) {
+      await showConfirmationDialog("You cannot book a time slot in the past. Please select a future time slot.");
+      return;
+    }
+
     // Check for overlaps
     const overlap = reservations.some(reservation => {
       const reservationStart = moment(reservation.start_date);
@@ -314,6 +320,14 @@ const GuestRoom: React.FC = () => {
                 onChange={async (update: [Date | null, Date | null]) => {
                   const [newStartDate, newEndDate] = update;
                   if (newStartDate && newEndDate) {
+                    const now = new Date();
+                    now.setHours(0, 0, 0, 0);  // Set to start of day for accurate comparison
+                    if (newStartDate < now) {
+                      await showConfirmationDialog("You cannot book a time slot in the past. Please select a future time slot.");
+                      setDateRange([undefined, undefined]);
+                      return;
+                    }
+
                     const overlap = reservations.some(reservation => {
                       const reservationStart = moment(reservation.start_date);
                       const reservationEnd = moment(reservation.end_date);
@@ -337,6 +351,7 @@ const GuestRoom: React.FC = () => {
                 placeholderText="Select date range"
                 className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                 dateFormat="dd MMM yyyy"
+                minDate={new Date()}  // Prevent selecting dates before today
                 renderCustomHeader={({
                   date,
                   decreaseMonth,
