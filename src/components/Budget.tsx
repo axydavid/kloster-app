@@ -25,6 +25,7 @@ interface BudgetEntry {
 interface User {
   id: string;
   email?: string;
+  type?: string;
   raw_user_meta_data?: {
     display_name?: string;
     iconColor?: string;
