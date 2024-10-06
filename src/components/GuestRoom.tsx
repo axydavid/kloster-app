@@ -352,7 +352,7 @@ const GuestRoom: React.FC = () => {
                 placeholderText="Select date range"
                 className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                 dateFormat="dd MMM yyyy"
-                minDate={new Date().setHours(0, 0, 0, 0)}  // Allow selecting from the start of today
+                minDate={new Date(new Date().setHours(0, 0, 0, 0))}  // Allow selecting from the start of today
                 renderCustomHeader={({
                   date,
                   decreaseMonth,
