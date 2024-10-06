@@ -11,6 +11,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { ChevronLeft, ChevronRight, X, Trash2 } from 'lucide-react';
 import Toast from './Toast';
+import { format, addMonths, subMonths } from 'date-fns';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -174,6 +175,10 @@ const GuestRoom: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const prevMonth = (date: Date) => subMonths(date, 1);
+  const nextMonth = (date: Date) => addMonths(date, 1);
 
   const showConfirmationDialog = useCallback(async (message: string): Promise<boolean> => {
     return new Promise<boolean>((resolve) => {
@@ -430,24 +435,41 @@ const GuestRoom: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="sm:p-0 p-0">
-          <Calendar
-            localizer={localizer}
-            events={reservations}
-            startAccessor="start_date"
-            endAccessor="end_date"
-            titleAccessor="guest_name"
-            style={{ height: 500 }}
-            views={['month']}
-            defaultView='month'
-            onSelectEvent={(event) => setSelectedReservation(event as Reservation)}
-            components={{
-              event: (props) => (
-                <CustomEvent
-                  event={props.event as Reservation}
-                />
-              ),
-            }}
-          />
+          <div className="flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <Button onClick={() => setCurrentDate(prevMonth(currentDate))}>
+                <ChevronLeft className="w-5 h-5" />
+                Previous Month
+              </Button>
+              <span className="text-lg font-semibold">
+                {format(currentDate, 'MMMM yyyy')}
+              </span>
+              <Button onClick={() => setCurrentDate(nextMonth(currentDate))}>
+                Next Month
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
+            <Calendar
+              localizer={localizer}
+              events={reservations}
+              startAccessor="start_date"
+              endAccessor="end_date"
+              titleAccessor="guest_name"
+              style={{ height: 500 }}
+              views={['month']}
+              defaultView='month'
+              date={currentDate}
+              onNavigate={(date) => setCurrentDate(date)}
+              onSelectEvent={(event) => setSelectedReservation(event as Reservation)}
+              components={{
+                event: (props) => (
+                  <CustomEvent
+                    event={props.event as Reservation}
+                  />
+                ),
+              }}
+            />
+          </div>
         </CardContent>
       </Card>
       {toastMessage && (
