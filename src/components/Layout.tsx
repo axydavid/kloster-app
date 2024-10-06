@@ -51,38 +51,38 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
 
   const NavItems = ({ isAdmin, isActive, onClick }: { isAdmin: boolean, isActive: (path: string) => string, onClick?: () => void }) => (
     <>
-      <Button variant="ghost" asChild className={isActive("/dashboard")} onClick={onClick}>
+      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/dashboard")}`} onClick={onClick}>
         <Link to="/dashboard" className="flex items-center">
           <LayoutDashboard className="mr-2 h-4 w-4" />
           Dashboard
         </Link>
       </Button>
-      <Button variant="ghost" asChild className={isActive("/dinner")} onClick={onClick}>
+      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/dinner")}`} onClick={onClick}>
         <Link to="/dinner" className="flex items-center">
           <UtensilsCrossed className="mr-2 h-4 w-4" />
           Dinner
         </Link>
       </Button>
-      <Button variant="ghost" asChild className={isActive("/washing")} onClick={onClick}>
+      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/washing")}`} onClick={onClick}>
         <Link to="/washing" className="flex items-center">
           <WashingMachine className="mr-2 h-4 w-4" />
           Washing
         </Link>
       </Button>
-      <Button variant="ghost" asChild className={isActive("/guest-room")} onClick={onClick}>
+      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/guest-room")}`} onClick={onClick}>
         <Link to="/guest-room" className="flex items-center">
           <BedDouble className="mr-2 h-4 w-4" />
           Guest Room
         </Link>
       </Button>
-      <Button variant="ghost" asChild className={isActive("/budget")} onClick={onClick}>
+      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/budget")}`} onClick={onClick}>
         <Link to="/budget" className="flex items-center">
           <Wallet className="mr-2 h-4 w-4" />
           Budget
         </Link>
       </Button>
       {isAdmin && (
-        <Button variant="ghost" asChild className={isActive("/accounting")} onClick={onClick}>
+        <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/accounting")}`} onClick={onClick}>
           <Link to="/accounting" className="flex items-center">
             <Calculator className="mr-2 h-4 w-4" />
             Accounting
