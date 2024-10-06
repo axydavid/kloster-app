@@ -88,7 +88,7 @@ const AdminPage: React.FC = () => {
           <CardContent>
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold mb-2">Washing Machine Hours</h3>
+                <h3 className="text-lg font-semibold mb-2">Washing Hours</h3>
                 <div className="flex flex-wrap gap-4">
                   <div>
                     <Label htmlFor="washingStartHour">Washing Start Hour</Label>
