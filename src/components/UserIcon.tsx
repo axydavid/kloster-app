@@ -31,7 +31,7 @@ const UserIcon: React.FC<UserIconProps> = ({ user, guests = 0, showRemoveButton 
       return name.slice(0, 2).toUpperCase();
     } else if (nameParts.length === 2) {
       return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
-    } else if (nameParts.length === 3 && nameParts[1].toLowerCase() === 'and') {
+    } else if (nameParts.length === 3 && (nameParts[1].toLowerCase() === 'and' || nameParts[1] === '&')) {
       return `${nameParts[0][0]}&${nameParts[2][0]}`.toUpperCase();
     } else {
       return nameParts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
