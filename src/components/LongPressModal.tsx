@@ -39,22 +39,24 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold mr-2">Custom Join</h2>
           <div className="flex items-center">
-            <Utensils className="text-gray-500 mr-2" />
-            <Input
-              type="number"
-              id="portions"
-              value={userPortions}
-              onChange={(e) => setUserPortions(Number(e.target.value))}
-              min={1}
-              max={10}
-              className="w-16 text-center mr-2 bg-gray-100"
-              onFocus={(e) => e.target.select()}
-              style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
-            />
+            <div className="relative mr-4">
+              <Utensils className="text-gray-500 absolute left-2 top-1/2 transform -translate-y-1/2" />
+              <Input
+                type="number"
+                id="portions"
+                value={userPortions}
+                onChange={(e) => setUserPortions(Number(e.target.value))}
+                min={1}
+                max={10}
+                className="w-20 pl-8 pr-2 text-center bg-gray-100"
+                onFocus={(e) => e.target.select()}
+                style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
+              />
+            </div>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
