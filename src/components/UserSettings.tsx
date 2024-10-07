@@ -13,7 +13,10 @@ import { Utensils } from 'lucide-react';
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
 interface DinnerDays {
-  [key: string]: 'always' | 'never' | 'default' | 'takeaway' | string;
+  [key: string]: {
+    status: 'always' | 'never' | 'default' | 'takeaway';
+    portions: string;
+  };
 }
 
 const presetColors = [
@@ -66,16 +69,16 @@ const UserSettings: React.FC = () => {
       setPortions(user.user_metadata.portions || '2');
       setJoinDinners(user.user_metadata.joinDinners || false);
       setDefaultResponse(user.user_metadata.defaultResponse || 'never');
-      setDinnerDays(user.user_metadata.dinnerDays || {
-        Monday: 'never',
-        Tuesday: 'never',
-        Wednesday: 'never',
-        Thursday: 'never',
-        Friday: 'never',
-        Saturday: 'never',
-        Sunday: 'never',
-      });
-      setWeeklyPortions(user.user_metadata.weeklyPortions || {});
+      const defaultDinnerDays = {
+        Monday: { status: 'never', portions: portions },
+        Tuesday: { status: 'never', portions: portions },
+        Wednesday: { status: 'never', portions: portions },
+        Thursday: { status: 'never', portions: portions },
+        Friday: { status: 'never', portions: portions },
+        Saturday: { status: 'never', portions: portions },
+        Sunday: { status: 'never', portions: portions },
+      };
+      setDinnerDays(user.user_metadata.dinnerDays || defaultDinnerDays);
     }
   };
 
@@ -99,8 +102,7 @@ const UserSettings: React.FC = () => {
         portions: portions.trim(),
         joinDinners,
         defaultResponse,
-        dinnerDays,
-        weeklyPortions
+        dinnerDays
       }
     });
 
@@ -168,14 +170,20 @@ const UserSettings: React.FC = () => {
     }
   };
 
-  const handleDinnerDayChange = (day: string, value: 'always' | 'never' | 'default' | 'takeaway' | string) => {
+  const handleDinnerDayChange = (day: string, status: 'always' | 'never' | 'default' | 'takeaway') => {
     setDinnerDays(prev => {
       const newDays = { ...prev };
-      if (typeof value === 'string' && !isNaN(parseFloat(value))) {
-        newDays[day] = value;
-      } else {
-        newDays[day] = value as 'always' | 'never' | 'default' | 'takeaway';
-      }
+      newDays[day] = { ...newDays[day], status };
+      return newDays;
+    });
+    // Automatically save the changes without showing the toast
+    handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>);
+  };
+
+  const handlePortionChange = (day: string, portions: string) => {
+    setDinnerDays(prev => {
+      const newDays = { ...prev };
+      newDays[day] = { ...newDays[day], portions };
       return newDays;
     });
     // Automatically save the changes without showing the toast
@@ -294,14 +302,14 @@ const UserSettings: React.FC = () => {
                       <Button
                         variant="outline"
                         className={`flex flex-col items-center justify-center h-24 p-2 w-full ${
-                          dinnerDays[day] === 'always'
+                          dinnerDays[day].status === 'always'
                             ? 'bg-green-100 hover:bg-green-200'
-                            : dinnerDays[day] === 'never'
+                            : dinnerDays[day].status === 'never'
                             ? 'bg-red-100 hover:bg-red-200'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                         onClick={() => {
-                          const currentValue = dinnerDays[day];
+                          const currentValue = dinnerDays[day].status;
                           const newValue =
                             currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
                           handleDinnerDayChange(day, newValue);
@@ -309,20 +317,20 @@ const UserSettings: React.FC = () => {
                       >
                         <span className="text-sm font-medium">{day.slice(0, 3)}</span>
                         <span className="text-xs text-muted-foreground mt-1">
-                          {dinnerDays[day] === 'always' ? 'Always' : dinnerDays[day] === 'takeaway' ? 'Take Away' : 'Never'}
+                          {dinnerDays[day].status === 'always' ? 'Always' : dinnerDays[day].status === 'takeaway' ? 'Take Away' : 'Never'}
                         </span>
-                        {dinnerDays[day] !== 'never' && (
+                        {dinnerDays[day].status !== 'never' && (
                           <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
                             <Utensils className="text-gray-500 w-4 h-4 mr-1" />
                             <input
                               type="text"
                               inputMode="decimal"
                               pattern="[0-9]*\.?[0-9]*"
-                              value={weeklyPortions[day] || portions}
+                              value={dinnerDays[day].portions}
                               onChange={(e) => {
                                 e.stopPropagation();
                                 const value = e.target.value.replace(/[^0-9.]/g, '');
-                                setWeeklyPortions(prev => ({...prev, [day]: value}));
+                                handlePortionChange(day, value);
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
