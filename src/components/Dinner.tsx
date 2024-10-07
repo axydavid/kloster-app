@@ -756,11 +756,16 @@ const Dinner: React.FC = () => {
                   }}
                   onContextMenu={(e) => {
                     e.preventDefault();
-                    handleLongPress(day);
-                    setLongPressedDay(day);
-                    setIsLongPressModalOpen(true);
+                    if (!isIngredientsPopupOpen) {
+                      handleLongPress(day);
+                      setLongPressedDay(day);
+                      setIsLongPressModalOpen(true);
+                    }
                   }}
                   onMouseDown={(e) => {
+                    if (isIngredientsPopupOpen) {
+                      return;
+                    }
                     const timer = setTimeout(() => {
                       handleLongPress(day);
                       setLongPressedDay(day);
