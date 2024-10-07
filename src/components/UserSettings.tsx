@@ -103,7 +103,6 @@ const UserSettings: React.FC = () => {
     if (error) {
       console.error('Error updating user settings:', error);
     } else {
-      console.log('User settings updated successfully:', data);
       // Refresh user settings after successful update
       fetchUserSettings();
 
