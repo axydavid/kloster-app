@@ -307,16 +307,20 @@ const UserSettings: React.FC = () => {
                           <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
                             <Utensils className="text-gray-500 w-4 h-4 mr-1" />
                             <input
-                              type="number"
+                              type="text"
+                              inputMode="decimal"
+                              pattern="[0-9]*\.?[0-9]*"
                               value={weeklyPortions[day] || portions}
                               onChange={(e) => {
                                 e.stopPropagation();
-                                setWeeklyPortions(prev => ({...prev, [day]: e.target.value}));
+                                const value = e.target.value.replace(/[^0-9.]/g, '');
+                                setWeeklyPortions(prev => ({...prev, [day]: value}));
                               }}
-                              onClick={(e) => e.stopPropagation()}
-                              min="0.5"
-                              step="0.5"
-                              className="w-12 p-1 text-center bg-transparent"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                (e.target as HTMLInputElement).select();
+                              }}
+                              className="w-12 p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                           </div>
                         )}
