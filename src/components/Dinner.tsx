@@ -755,6 +755,8 @@ const Dinner: React.FC = () => {
                       return;
                     }
                     const startTime = new Date().getTime();
+                    const startX = e.clientX;
+                    const startY = e.clientY;
                     const timer = setTimeout(() => {
                       handleLongPress(day);
                       setLongPressedDay(day);
@@ -763,7 +765,7 @@ const Dinner: React.FC = () => {
                     const clearTimer = () => {
                       clearTimeout(timer);
                       document.removeEventListener('mouseup', handleMouseUp);
-                      document.removeEventListener('mousemove', clearTimer);
+                      document.removeEventListener('mousemove', handleMouseMove);
                     };
                     const handleMouseUp = () => {
                       clearTimer();
@@ -773,8 +775,16 @@ const Dinner: React.FC = () => {
                         toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
                       }
                     };
+                    const handleMouseMove = (moveEvent: MouseEvent) => {
+                      const moveThreshold = 10; // pixels
+                      const deltaX = Math.abs(moveEvent.clientX - startX);
+                      const deltaY = Math.abs(moveEvent.clientY - startY);
+                      if (deltaX > moveThreshold || deltaY > moveThreshold) {
+                        clearTimer();
+                      }
+                    };
                     document.addEventListener('mouseup', handleMouseUp);
-                    document.addEventListener('mousemove', clearTimer);
+                    document.addEventListener('mousemove', handleMouseMove);
                     e.currentTarget.addEventListener('mouseleave', clearTimer, { once: true });
                   }}
                   onContextMenu={(e) => {
