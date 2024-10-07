@@ -20,6 +20,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
   onTakeAway,
 }) => {
   const [userPortions, setUserPortions] = React.useState(1);
+  const [initialPortionsLoaded, setInitialPortionsLoaded] = React.useState(false);
 
   const handleEscapeKey = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {
@@ -38,19 +39,20 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
 
   useEffect(() => {
     const fetchUserPortions = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase.rpc('get_user_metadata', { user_id: user.id });
-        if (!error && data) {
-          setUserPortions(data.portions || 1);
+      if (!initialPortionsLoaded) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase.rpc('get_user_metadata', { user_id: user.id });
+          if (!error && data) {
+            setUserPortions(data.portions || 1);
+            setInitialPortionsLoaded(true);
+          }
         }
       }
     };
 
-    if (isOpen) {
-      fetchUserPortions();
-    }
-  }, [isOpen]);
+    fetchUserPortions();
+  }, [initialPortionsLoaded]);
 
   if (!isOpen) return null;
 
