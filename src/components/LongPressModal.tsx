@@ -8,7 +8,6 @@ interface LongPressModalProps {
   onClose: () => void;
   onJoin: (portions: number) => void;
   onTakeAway: (portions: number) => void;
-  initialPortions: number;
 }
 
 const LongPressModal: React.FC<LongPressModalProps> = ({
@@ -16,9 +15,8 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
   onClose,
   onJoin,
   onTakeAway,
-  initialPortions,
 }) => {
-  const [userPortions, setUserPortions] = React.useState(initialPortions);
+  const [userPortions, setUserPortions] = React.useState(1);
 
   const handleEscapeKey = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {

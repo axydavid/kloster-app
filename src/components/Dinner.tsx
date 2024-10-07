@@ -943,7 +943,6 @@ const Dinner: React.FC = () => {
             setIsLongPressModalOpen(false);
           }
         }}
-        initialPortions={userPortions}
       />
     </>
   );
