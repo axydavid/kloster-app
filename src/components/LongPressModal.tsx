@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
-import { Users, ShoppingBag } from 'lucide-react';
+import { Users, ShoppingBag, Utensils } from 'lucide-react';
 
 interface LongPressModalProps {
   isOpen: boolean;
@@ -43,14 +43,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <h2 className="text-xl font-bold mr-2">Custom Join</h2>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-              <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-              <path d="M7 2v20" />
-              <path d="M21 15v5" />
-              <path d="M18.5 17.5L21 15l2.5 2.5" />
-              <path d="M21 15l2.5-2.5" />
-              <path d="M21 2v3c0 6-3 9-9 9h-5" />
-            </svg>
+            <Utensils className="text-gray-500" />
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
