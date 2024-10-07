@@ -303,18 +303,22 @@ const UserSettings: React.FC = () => {
                         {dinnerDays[day] !== 'never' && (
                           <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
                             <Utensils className="text-gray-500 w-4 h-4 mr-1" />
-                            <input
-                              type="number"
-                              value={dinnerDays[day] === 'always' ? portions : dinnerDays[day]}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleDinnerDayChange(day, e.target.value);
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              min="0.5"
-                              step="0.5"
-                              className="w-12 p-1 text-center bg-transparent"
-                            />
+                            {dinnerDays[day] === 'always' ? (
+                              <input
+                                type="number"
+                                value={portions}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  setPortions(e.target.value);
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                min="0.5"
+                                step="0.5"
+                                className="w-12 p-1 text-center bg-transparent"
+                              />
+                            ) : (
+                              <span className="w-12 p-1 text-center">{portions}</span>
+                            )}
                           </div>
                         )}
                       </Button>
