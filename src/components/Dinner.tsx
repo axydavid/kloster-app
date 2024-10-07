@@ -8,6 +8,8 @@ import SimpleUserIcon from './SimpleUserIcon';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { UserContext } from './Layout';
 import { useNavigate } from 'react-router-dom';
+import { TakeoutDining } from '@mui/icons-material';
+import LongPressModal from './LongPressModal';
 import cowIcon from '../icons/cow.png';
 import pigIcon from '../icons/pig.png';
 import chickenIcon from '../icons/chicken.png';
@@ -879,6 +881,23 @@ const Dinner: React.FC = () => {
         <Button onClick={() => changeWeek(1)}>Next 4 Weeks</Button>
       </div>
     </Card>
+<LongPressModal
+  isOpen={isLongPressModalOpen}
+  onClose={() => setIsLongPressModalOpen(false)}
+  onJoin={(portions) => {
+    if (longPressedDay) {
+      toggleAttendance(longPressedDay.date, false, portions);
+      setIsLongPressModalOpen(false);
+    }
+  }}
+  onTakeAway={(portions) => {
+    if (longPressedDay) {
+      toggleAttendance(longPressedDay.date, true, portions);
+      setIsLongPressModalOpen(false);
+    }
+  }}
+  initialPortions={userPortions}
+/>
   );
 };
 
