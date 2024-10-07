@@ -43,7 +43,6 @@ const UserSettings: React.FC = () => {
   const [isColorPopoverOpen, setIsColorPopoverOpen] = useState(false);
   const [joinDinners, setJoinDinners] = useState(false);
   const [defaultResponse, setDefaultResponse] = useState<'never' | 'always'>('never');
-  const [showToast, setShowToast] = useState(false);
   const [dinnerDays, setDinnerDays] = useState<DinnerDays>({
     Monday: 'always',
     Tuesday: 'always',
@@ -108,10 +107,7 @@ const UserSettings: React.FC = () => {
       console.error('Error updating user settings:', error);
     } else {
       // Refresh user settings after successful update
-      fetchUserSettings();
-
-      // Show toast message
-      setShowToast(true);
+      await fetchUserSettings();
 
       // Update admin_settings table
       if (joinDinners) {
@@ -163,6 +159,9 @@ const UserSettings: React.FC = () => {
           }
         }
       }
+
+      // Show toast message only after all operations are complete
+      setShowToast(true);
     }
   };
 
@@ -186,12 +185,10 @@ const UserSettings: React.FC = () => {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {showToast && (
-            <div className='h-0 absolute'>
-              <Toast
-                message="Settings saved successfully!"
-                onClose={() => setShowToast(false)}
-              />
-            </div>
+            <Toast
+              message="Settings saved successfully!"
+              onClose={() => setShowToast(false)}
+            />
           )}
           <div className="flex flex-wrap -mx-2">
             <div className="w-full sm:w-1/2 px-2 mb-4">
