@@ -761,9 +761,15 @@ const Dinner: React.FC = () => {
                       toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
                     }
                   }}
-                  onTouchStart={() => {
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    handleLongPress(day);
+                  }}
+                  onTouchStart={(e) => {
                     const timer = setTimeout(() => handleLongPress(day), 500);
-                    return () => clearTimeout(timer);
+                    const clearTimer = () => clearTimeout(timer);
+                    e.currentTarget.addEventListener('touchend', clearTimer, { once: true });
+                    e.currentTarget.addEventListener('touchmove', clearTimer, { once: true });
                   }}
                 >
                   <div className="w-full h-full flex items-center">
