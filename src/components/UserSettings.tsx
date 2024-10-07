@@ -78,7 +78,15 @@ const UserSettings: React.FC = () => {
         Saturday: { status: 'never', portions: portions },
         Sunday: { status: 'never', portions: portions },
       };
-      setDinnerDays(user.user_metadata.dinnerDays || defaultDinnerDays);
+      const userDinnerDays = user.user_metadata.dinnerDays || {};
+      const formattedDinnerDays = Object.entries(defaultDinnerDays).reduce((acc, [day, defaultValue]) => {
+        acc[day] = {
+          status: userDinnerDays[day]?.status || defaultValue.status,
+          portions: userDinnerDays[day]?.portions || defaultValue.portions
+        };
+        return acc;
+      }, {} as DinnerDays);
+      setDinnerDays(formattedDinnerDays);
     }
   };
 
@@ -95,6 +103,14 @@ const UserSettings: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const formattedDinnerDays = Object.entries(dinnerDays).reduce((acc, [day, value]) => {
+      acc[day] = {
+        status: value.status,
+        portions: value.portions
+      };
+      return acc;
+    }, {} as { [key: string]: { status: string; portions: string } });
+
     const { data, error } = await supabase.auth.updateUser({
       data: {
         display_name: displayName.trim(),
@@ -102,7 +118,7 @@ const UserSettings: React.FC = () => {
         portions: portions.trim(),
         joinDinners,
         defaultResponse,
-        dinnerDays
+        dinnerDays: formattedDinnerDays
       }
     });
 
