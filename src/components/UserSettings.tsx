@@ -52,6 +52,7 @@ const UserSettings: React.FC = () => {
     Saturday: 'always',
     Sunday: 'always',
   });
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     fetchUserSettings();
