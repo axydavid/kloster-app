@@ -203,7 +203,69 @@ const UserSettings: React.FC = () => {
       return newDays;
     });
     // Automatically save the changes without showing the toast
-    handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>);
+    handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>, day, portions);
+  };
+
+  const handleSubmit = async (e: React.FormEvent, updatedDay?: string, updatedPortions?: string) => {
+    e.preventDefault();
+    const formattedDinnerDays = Object.entries(dinnerDays).reduce((acc, [day, value]) => {
+      acc[day] = {
+        status: value.status,
+        portions: updatedDay === day ? updatedPortions! : value.portions
+      };
+      return acc;
+    }, {} as { [key: string]: { status: string; portions: string } });
+
+    const { data, error } = await supabase.auth.updateUser({
+      data: {
+        display_name: displayName.trim(),
+        iconColor,
+        portions: portions.trim(),
+        joinDinners,
+        defaultResponse,
+        dinnerDays: formattedDinnerDays
+      }
+    });
+
+    if (error) {
+      console.error('Error updating user settings:', error);
+      return false;
+    } else {
+      // Refresh user settings after successful update
+      await fetchUserSettings();
+
+      // Update admin_settings table
+      // ... (rest of the function remains the same)
+    }
+  };
+
+  const fetchUserSettings = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setDisplayName(user.user_metadata.display_name || user.email || '');
+      setIconColor(user.user_metadata.iconColor || '#007bff');
+      setPortions(user.user_metadata.portions || '2');
+      setJoinDinners(user.user_metadata.joinDinners || false);
+      setDefaultResponse(user.user_metadata.defaultResponse || 'never');
+      const defaultDinnerDays = {
+        Monday: { status: 'never', portions: user.user_metadata.portions || '2' },
+        Tuesday: { status: 'never', portions: user.user_metadata.portions || '2' },
+        Wednesday: { status: 'never', portions: user.user_metadata.portions || '2' },
+        Thursday: { status: 'never', portions: user.user_metadata.portions || '2' },
+        Friday: { status: 'never', portions: user.user_metadata.portions || '2' },
+        Saturday: { status: 'never', portions: user.user_metadata.portions || '2' },
+        Sunday: { status: 'never', portions: user.user_metadata.portions || '2' },
+      };
+      const userDinnerDays = user.user_metadata.dinnerDays || {};
+      const formattedDinnerDays = Object.entries(defaultDinnerDays).reduce((acc, [day, defaultValue]) => {
+        acc[day] = {
+          status: userDinnerDays[day]?.status || defaultValue.status,
+          portions: userDinnerDays[day]?.portions || defaultValue.portions
+        };
+        return acc;
+      }, {} as DinnerDays);
+      setDinnerDays(formattedDinnerDays);
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
