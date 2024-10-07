@@ -282,12 +282,12 @@ const UserSettings: React.FC = () => {
                     <div key={day} className="flex flex-col items-center">
                       <Button
                         variant="outline"
-                        className={`flex flex-col items-center justify-center h-20 p-2 w-full ${
+                        className={`flex flex-col items-center justify-center h-24 p-2 w-full ${
                           dinnerDays[day] === 'always'
                             ? 'bg-green-100 hover:bg-green-200'
                             : dinnerDays[day] === 'never'
                             ? 'bg-red-100 hover:bg-red-200'
-                            : ''
+                            : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                         onClick={() => {
                           const currentValue = dinnerDays[day];
@@ -300,20 +300,20 @@ const UserSettings: React.FC = () => {
                         <span className="text-xs text-muted-foreground mt-1">
                           {dinnerDays[day] === 'always' ? 'Always' : dinnerDays[day] === 'takeaway' ? 'Take Away' : 'Never'}
                         </span>
+                        {dinnerDays[day] !== 'never' && (
+                          <div className="flex items-center mt-2 bg-gray-200 rounded p-1">
+                            <Utensils className="text-gray-500 w-4 h-4 mr-1" />
+                            <input
+                              type="number"
+                              value={dinnerDays[day] === 'always' ? portions : '1'}
+                              onChange={(e) => handleDinnerDayChange(day, e.target.value)}
+                              min="0.5"
+                              step="0.5"
+                              className="w-12 p-1 text-center bg-transparent"
+                            />
+                          </div>
+                        )}
                       </Button>
-                      {portions !== '1' && dinnerDays[day] !== 'never' && (
-                        <div className="flex items-center mt-1">
-                          <Utensils className="text-gray-500 w-4 h-4 mr-1" />
-                          <Input
-                            type="number"
-                            value={dinnerDays[day] === 'always' ? portions : '1'}
-                            onChange={(e) => handleDinnerDayChange(day, e.target.value)}
-                            min="0.5"
-                            step="0.5"
-                            className="w-12 p-1 text-center"
-                          />
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
