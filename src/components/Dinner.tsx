@@ -8,8 +8,7 @@ import SimpleUserIcon from './SimpleUserIcon';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { UserContext } from './Layout';
 import { useNavigate } from 'react-router-dom';
-import { Utensils } from 'lucide-react';
-import LongPressModal from './LongPressModal';
+import { TakeoutDining } from '@mui/icons-material';
 import cowIcon from '../icons/cow.png';
 import pigIcon from '../icons/pig.png';
 import chickenIcon from '../icons/chicken.png';
@@ -461,7 +460,7 @@ const Dinner: React.FC = () => {
     }
   };
 
-  const toggleAttendance = async (date: string, isTakeAway: boolean = false) => {
+  const toggleAttendance = async (date: string, isTakeAway: boolean = false, portions: number = 1) => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
@@ -469,13 +468,6 @@ const Dinner: React.FC = () => {
       if (!(await handleRestrictedAccess())) return;
 
       const currentUserId = user.id;
-
-      // Fetch user's default portions from metadata using RPC
-      const { data: userData, error: userDataError } = await supabase.rpc('get_user_metadata', { user_id: currentUserId });
-
-      if (userDataError) throw userDataError;
-
-      const userPortions = userData?.portions || 1;
 
       // First, try to fetch the existing day
       const { data: existingDay, error: fetchError } = await supabase
@@ -514,13 +506,17 @@ const Dinner: React.FC = () => {
       const existingAttendantIndex = attendants.findIndex(a => a.id === currentUserId);
 
       if (existingAttendantIndex !== -1) {
-        // Remove existing attendance
-        attendants = attendants.filter(a => a.id !== currentUserId);
+        // Update existing attendance
+        attendants[existingAttendantIndex] = {
+          ...attendants[existingAttendantIndex],
+          portions,
+          isTakeAway
+        };
       } else {
         // Add new attendance
         attendants.push({
           id: currentUserId,
-          portions: userPortions,
+          portions,
           isTakeAway
         });
       }
@@ -762,6 +758,10 @@ const Dinner: React.FC = () => {
                       const currentAttendant = day.attendants.find(a => a.id === currentUserId);
                       toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
                     }
+                  }}
+                  onTouchStart={() => {
+                    const timer = setTimeout(() => handleLongPress(day), 500);
+                    return () => clearTimeout(timer);
                   }}
                 >
                   <div className="w-full h-full flex items-center">
