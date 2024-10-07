@@ -53,6 +53,7 @@ const UserSettings: React.FC = () => {
     Sunday: 'always',
   });
   const [showToast, setShowToast] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     fetchUserSettings();
@@ -91,6 +92,7 @@ const UserSettings: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     const { data, error } = await supabase.auth.updateUser({
       data: {
         display_name: displayName.trim(),
@@ -161,6 +163,8 @@ const UserSettings: React.FC = () => {
         }
       }
 
+      // Show toast message only after all operations are complete
+      setShowToast(true);
       return true;
     }
   };
@@ -199,7 +203,7 @@ const UserSettings: React.FC = () => {
         <CardTitle>User Settings</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleFormSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {showToast && (
             <Toast
               message="Settings saved successfully!"
