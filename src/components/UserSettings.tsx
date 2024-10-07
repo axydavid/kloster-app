@@ -91,9 +91,9 @@ const UserSettings: React.FC = () => {
     e.preventDefault();
     const { data, error } = await supabase.auth.updateUser({
       data: {
-        display_name: displayName,
+        display_name: displayName.trim(),
         iconColor,
-        portions,
+        portions: portions.trim(),
         joinDinners,
         defaultResponse,
         dinnerDays
