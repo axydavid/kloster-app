@@ -47,13 +47,13 @@ const UserSettings: React.FC = () => {
   const [joinDinners, setJoinDinners] = useState(false);
   const [defaultResponse, setDefaultResponse] = useState<'never' | 'always'>('never');
   const [dinnerDays, setDinnerDays] = useState<DinnerDays>({
-    Monday: 'always',
-    Tuesday: 'always',
-    Wednesday: 'always',
-    Thursday: 'always',
-    Friday: 'always',
-    Saturday: 'always',
-    Sunday: 'always',
+    Monday: { status: 'always', portions: portions },
+    Tuesday: { status: 'always', portions: portions },
+    Wednesday: { status: 'always', portions: portions },
+    Thursday: { status: 'always', portions: portions },
+    Friday: { status: 'always', portions: portions },
+    Saturday: { status: 'always', portions: portions },
+    Sunday: { status: 'always', portions: portions },
   });
   const [showToast, setShowToast] = useState(false);
 
@@ -87,7 +87,7 @@ const UserSettings: React.FC = () => {
     setDinnerDays(prevDays => {
       const newDays = { ...prevDays };
       Object.keys(newDays).forEach(day => {
-        newDays[day] = value;
+        newDays[day] = { ...newDays[day], status: value };
       });
       return newDays;
     });
