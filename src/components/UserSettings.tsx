@@ -206,35 +206,6 @@ const UserSettings: React.FC = () => {
     handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>, day, portions);
   };
 
-  const fetchUserSettings = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      setDisplayName(user.user_metadata.display_name || user.email || '');
-      setIconColor(user.user_metadata.iconColor || '#007bff');
-      setPortions(user.user_metadata.portions || '2');
-      setJoinDinners(user.user_metadata.joinDinners || false);
-      setDefaultResponse(user.user_metadata.defaultResponse || 'never');
-      const defaultDinnerDays = {
-        Monday: { status: 'never', portions: user.user_metadata.portions || '2' },
-        Tuesday: { status: 'never', portions: user.user_metadata.portions || '2' },
-        Wednesday: { status: 'never', portions: user.user_metadata.portions || '2' },
-        Thursday: { status: 'never', portions: user.user_metadata.portions || '2' },
-        Friday: { status: 'never', portions: user.user_metadata.portions || '2' },
-        Saturday: { status: 'never', portions: user.user_metadata.portions || '2' },
-        Sunday: { status: 'never', portions: user.user_metadata.portions || '2' },
-      };
-      const userDinnerDays = user.user_metadata.dinnerDays || {};
-      const formattedDinnerDays = Object.entries(defaultDinnerDays).reduce((acc, [day, defaultValue]) => {
-        acc[day] = {
-          status: userDinnerDays[day]?.status || defaultValue.status,
-          portions: userDinnerDays[day]?.portions || defaultValue.portions
-        };
-        return acc;
-      }, {} as DinnerDays);
-      setDinnerDays(formattedDinnerDays);
-    }
-  };
-
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const success = await handleSubmit(e);
