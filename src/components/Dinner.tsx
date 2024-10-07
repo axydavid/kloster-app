@@ -754,26 +754,15 @@ const Dinner: React.FC = () => {
                     e.preventDefault();
                     handleLongPress(day);
                   }}
-                  onMouseDown={(e) => {
-                    if (e.button === 0) { // Left mouse button
-                      let longPressTriggered = false;
-                      const timer = setTimeout(() => {
-                        longPressTriggered = true;
-                        handleLongPress(day);
-                        setLongPressedDay(day);
-                        setIsLongPressModalOpen(true);
-                      }, 500);
-                      const clearTimer = () => {
-                        clearTimeout(timer);
-                        if (!longPressTriggered) {
-                          // Only toggle attendance if long press wasn't triggered
-                          const currentAttendant = day.attendants.find(a => a.id === currentUserId);
-                          toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
-                        }
-                      };
-                      document.addEventListener('mouseup', clearTimer, { once: true });
-                      document.addEventListener('mousemove', clearTimer, { once: true });
-                    }
+                  onClick={() => {
+                    const currentAttendant = day.attendants.find(a => a.id === currentUserId);
+                    toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    handleLongPress(day);
+                    setLongPressedDay(day);
+                    setIsLongPressModalOpen(true);
                   }}
                   onTouchStart={(e) => {
                     const timer = setTimeout(() => handleLongPress(day), 500);
