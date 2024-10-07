@@ -771,9 +771,14 @@ const Dinner: React.FC = () => {
                       setLongPressedDay(day);
                       setIsLongPressModalOpen(true);
                     }, 500);
-                    const clearTimer = () => clearTimeout(timer);
-                    document.addEventListener('mouseup', clearTimer, { once: true });
-                    document.addEventListener('mousemove', clearTimer, { once: true });
+                    const clearTimer = () => {
+                      clearTimeout(timer);
+                      document.removeEventListener('mouseup', clearTimer);
+                      document.removeEventListener('mousemove', clearTimer);
+                    };
+                    document.addEventListener('mouseup', clearTimer);
+                    document.addEventListener('mousemove', clearTimer);
+                    e.currentTarget.addEventListener('mouseleave', clearTimer, { once: true });
                   }}
                   onTouchStart={(e) => {
                     const timer = setTimeout(() => {
