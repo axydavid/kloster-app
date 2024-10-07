@@ -33,6 +33,10 @@ const UserIcon: React.FC<UserIconProps> = ({ user, guests = 0, showRemoveButton 
       return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
     } else if (nameParts.length === 3 && (nameParts[1].toLowerCase() === 'and' || nameParts[1] === '&')) {
       return `${nameParts[0][0]}&${nameParts[2][0]}`.toUpperCase();
+    } else if (nameParts.length > 3) {
+      const firstPart = nameParts[0][0].toUpperCase();
+      const lastPart = nameParts[nameParts.length - 1][0].toUpperCase();
+      return `${firstPart}&${lastPart}`;
     } else {
       return nameParts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
     }
