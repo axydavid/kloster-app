@@ -8,10 +8,10 @@ import SimpleUserIcon from './SimpleUserIcon';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { UserContext } from './Layout';
 import { useNavigate } from 'react-router-dom';
-import { TakeoutDining } from '@mui/icons-material';
 import cowIcon from '../icons/cow.png';
 import pigIcon from '../icons/pig.png';
 import chickenIcon from '../icons/chicken.png';
+import LongPressModal from './LongPressModal';
 import fishIcon from '../icons/fish.png';
 import riceBowlIcon from '../icons/rice-bowl.png';
 import potatoIcon from '../icons/potato.png';
@@ -182,10 +182,12 @@ const Dinner: React.FC = () => {
     // Fetch user's default portions
     supabase.rpc('get_user_metadata', { user_id: currentUserId })
       .then(({ data, error }) => {
-        if (error) throw error;
-        setUserPortions(data?.portions || 1);
-      })
-      .catch((error: any) => console.error('Error fetching user metadata:', error));
+        if (error) {
+          console.error('Error fetching user metadata:', error);
+        } else {
+          setUserPortions(data?.portions || 1);
+        }
+      });
   }, [currentUserId]);
 
   const closePopover = useCallback(() => {
@@ -885,13 +887,13 @@ const Dinner: React.FC = () => {
       <LongPressModal
         isOpen={isLongPressModalOpen}
         onClose={() => setIsLongPressModalOpen(false)}
-        onJoin={(portions) => {
+        onJoin={(portions: number) => {
           if (longPressedDay) {
             toggleAttendance(longPressedDay.date, false, portions);
             setIsLongPressModalOpen(false);
           }
         }}
-        onTakeAway={(portions) => {
+        onTakeAway={(portions: number) => {
           if (longPressedDay) {
             toggleAttendance(longPressedDay.date, true, portions);
             setIsLongPressModalOpen(false);
