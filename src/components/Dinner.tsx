@@ -750,10 +750,6 @@ const Dinner: React.FC = () => {
                 </div>
                 <div
                   className="flex-1 p-2 relative cursor-pointer"
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    handleLongPress(day);
-                  }}
                   onClick={() => {
                     const currentAttendant = day.attendants.find(a => a.id === currentUserId);
                     toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
@@ -765,7 +761,11 @@ const Dinner: React.FC = () => {
                     setIsLongPressModalOpen(true);
                   }}
                   onTouchStart={(e) => {
-                    const timer = setTimeout(() => handleLongPress(day), 500);
+                    const timer = setTimeout(() => {
+                      handleLongPress(day);
+                      setLongPressedDay(day);
+                      setIsLongPressModalOpen(true);
+                    }, 500);
                     const clearTimer = () => clearTimeout(timer);
                     e.currentTarget.addEventListener('touchend', clearTimer, { once: true });
                     e.currentTarget.addEventListener('touchmove', clearTimer, { once: true });
