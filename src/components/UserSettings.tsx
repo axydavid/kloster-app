@@ -184,14 +184,6 @@ const UserSettings: React.FC = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await handleSubmit(e);
-    if (success) {
-      setShowToast(true);
-    }
-  };
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     await handleSubmit(e);
     setShowToast(true);
   };
