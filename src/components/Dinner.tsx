@@ -760,6 +760,16 @@ const Dinner: React.FC = () => {
                     setLongPressedDay(day);
                     setIsLongPressModalOpen(true);
                   }}
+                  onMouseDown={(e) => {
+                    const timer = setTimeout(() => {
+                      handleLongPress(day);
+                      setLongPressedDay(day);
+                      setIsLongPressModalOpen(true);
+                    }, 500);
+                    const clearTimer = () => clearTimeout(timer);
+                    document.addEventListener('mouseup', clearTimer, { once: true });
+                    document.addEventListener('mousemove', clearTimer, { once: true });
+                  }}
                   onTouchStart={(e) => {
                     const timer = setTimeout(() => {
                       handleLongPress(day);
