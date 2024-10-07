@@ -613,8 +613,9 @@ const Dinner: React.FC = () => {
   };
 
   return (
-    <Card className="overflow-x-auto">
-      <CardHeader className="card-header">
+    <>
+      <Card className="overflow-x-auto">
+        <CardHeader className="card-header">
         <div className="flex justify-between items-center">
           <CardTitle>Dinner</CardTitle>
           <div className="flex items-center space-x-2">
@@ -879,25 +880,26 @@ const Dinner: React.FC = () => {
       <div className="flex justify-center mt-4 mb-4 space-x-4">
         <Button onClick={() => changeWeek(-1)}>Previous 4 Weeks</Button>
         <Button onClick={() => changeWeek(1)}>Next 4 Weeks</Button>
-      </div>
-    </Card>
-    <LongPressModal
-  isOpen={isLongPressModalOpen}
-  onClose={() => setIsLongPressModalOpen(false)}
-  onJoin={(portions) => {
-    if (longPressedDay) {
-      toggleAttendance(longPressedDay.date, false, portions);
-      setIsLongPressModalOpen(false);
-    }
-  }}
-  onTakeAway={(portions) => {
-    if (longPressedDay) {
-      toggleAttendance(longPressedDay.date, true, portions);
-      setIsLongPressModalOpen(false);
-    }
-  }}
-  initialPortions={userPortions}
-/>
+        </div>
+      </Card>
+      <LongPressModal
+        isOpen={isLongPressModalOpen}
+        onClose={() => setIsLongPressModalOpen(false)}
+        onJoin={(portions) => {
+          if (longPressedDay) {
+            toggleAttendance(longPressedDay.date, false, portions);
+            setIsLongPressModalOpen(false);
+          }
+        }}
+        onTakeAway={(portions) => {
+          if (longPressedDay) {
+            toggleAttendance(longPressedDay.date, true, portions);
+            setIsLongPressModalOpen(false);
+          }
+        }}
+        initialPortions={userPortions}
+      />
+    </>
   );
 };
 
