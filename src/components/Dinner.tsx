@@ -750,25 +750,27 @@ const Dinner: React.FC = () => {
                 </div>
                 <div
                   className="flex-1 p-2 relative cursor-pointer"
-                  onClick={(e) => {
-                    // Prevent click if it's on the guest button
-                    if (!(e.target as HTMLElement).closest('.guest-button')) {
-                      const currentAttendant = day.attendants.find(a => a.id === currentUserId);
-                      toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
-                    }
-                  }}
                   onContextMenu={(e) => {
                     e.preventDefault();
                     handleLongPress(day);
                   }}
                   onMouseDown={(e) => {
                     if (e.button === 0) { // Left mouse button
+                      let longPressTriggered = false;
                       const timer = setTimeout(() => {
+                        longPressTriggered = true;
                         handleLongPress(day);
                         setLongPressedDay(day);
                         setIsLongPressModalOpen(true);
                       }, 500);
-                      const clearTimer = () => clearTimeout(timer);
+                      const clearTimer = () => {
+                        clearTimeout(timer);
+                        if (!longPressTriggered) {
+                          // Only toggle attendance if long press wasn't triggered
+                          const currentAttendant = day.attendants.find(a => a.id === currentUserId);
+                          toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
+                        }
+                      };
                       document.addEventListener('mouseup', clearTimer, { once: true });
                       document.addEventListener('mousemove', clearTimer, { once: true });
                     }
