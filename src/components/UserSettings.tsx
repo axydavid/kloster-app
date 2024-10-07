@@ -101,12 +101,12 @@ const UserSettings: React.FC = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, updatedDay?: string, updatedPortions?: string) => {
     e.preventDefault();
     const formattedDinnerDays = Object.entries(dinnerDays).reduce((acc, [day, value]) => {
       acc[day] = {
         status: value.status,
-        portions: value.portions
+        portions: updatedDay === day ? updatedPortions! : value.portions
       };
       return acc;
     }, {} as { [key: string]: { status: string; portions: string } });
@@ -206,39 +206,6 @@ const UserSettings: React.FC = () => {
     handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>, day, portions);
   };
 
-  const handleSubmit = async (e: React.FormEvent, updatedDay?: string, updatedPortions?: string) => {
-    e.preventDefault();
-    const formattedDinnerDays = Object.entries(dinnerDays).reduce((acc, [day, value]) => {
-      acc[day] = {
-        status: value.status,
-        portions: updatedDay === day ? updatedPortions! : value.portions
-      };
-      return acc;
-    }, {} as { [key: string]: { status: string; portions: string } });
-
-    const { data, error } = await supabase.auth.updateUser({
-      data: {
-        display_name: displayName.trim(),
-        iconColor,
-        portions: portions.trim(),
-        joinDinners,
-        defaultResponse,
-        dinnerDays: formattedDinnerDays
-      }
-    });
-
-    if (error) {
-      console.error('Error updating user settings:', error);
-      return false;
-    } else {
-      // Refresh user settings after successful update
-      await fetchUserSettings();
-
-      // Update admin_settings table
-      // ... (rest of the function remains the same)
-    }
-  };
-
   const fetchUserSettings = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
@@ -270,8 +237,10 @@ const UserSettings: React.FC = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleSubmit(e);
-    setShowToast(true);
+    const success = await handleSubmit(e);
+    if (success) {
+      setShowToast(true);
+    }
   };
 
   return (
