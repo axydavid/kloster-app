@@ -172,6 +172,19 @@ const Dinner: React.FC = () => {
   const [userPortions, setUserPortions] = useState(1);
   const isMobile = useMediaQuery('(max-width: 768px)');
 
+  useEffect(() => {
+    if (currentUserId) {
+      supabase.rpc('get_user_metadata', { user_id: currentUserId })
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error fetching user metadata:', error);
+          } else {
+            setUserPortions(data?.portions || 1);
+          }
+        });
+    }
+  }, [currentUserId]);
+
   const handlePopoverOpenChange = useCallback((open: boolean) => {
     setIsIngredientsPopupOpen(open);
   }, []);
@@ -179,16 +192,7 @@ const Dinner: React.FC = () => {
   const handleLongPress = useCallback((day: DinnerDay) => {
     setLongPressedDay(day);
     setIsLongPressModalOpen(true);
-    // Fetch user's default portions
-    supabase.rpc('get_user_metadata', { user_id: currentUserId })
-      .then(({ data, error }) => {
-        if (error) {
-          console.error('Error fetching user metadata:', error);
-        } else {
-          setUserPortions(data?.portions || 1);
-        }
-      });
-  }, [currentUserId]);
+  }, []);
 
   const closePopover = useCallback(() => {
     const popoverTrigger = document.querySelector('[data-state="open"]');
