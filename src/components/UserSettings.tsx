@@ -175,6 +175,16 @@ const UserSettings: React.FC = () => {
       }
       return newDays;
     });
+    // Automatically save the changes without showing the toast
+    handleSubmit(new Event('submit') as React.FormEvent);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await handleSubmit(e);
+    if (success) {
+      setShowToast(true);
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
