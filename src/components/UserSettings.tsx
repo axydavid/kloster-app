@@ -38,7 +38,8 @@ const presetColors = [
 const UserSettings: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [iconColor, setIconColor] = useState('#007bff');
-  const [portions, setPortions] = useState('1');
+  const [portions, setPortions] = useState('2');
+  const [weeklyPortions, setWeeklyPortions] = useState<{ [key: string]: string }>({});
   const [isColorPopoverOpen, setIsColorPopoverOpen] = useState(false);
   const [joinDinners, setJoinDinners] = useState(false);
   const [defaultResponse, setDefaultResponse] = useState<'never' | 'always'>('never');
@@ -62,7 +63,7 @@ const UserSettings: React.FC = () => {
     if (user) {
       setDisplayName(user.user_metadata.display_name || user.email || '');
       setIconColor(user.user_metadata.iconColor || '#007bff');
-      setPortions(user.user_metadata.portions || '1');
+      setPortions(user.user_metadata.portions || '2');
       setJoinDinners(user.user_metadata.joinDinners || false);
       setDefaultResponse(user.user_metadata.defaultResponse || 'never');
       setDinnerDays(user.user_metadata.dinnerDays || {
@@ -74,6 +75,7 @@ const UserSettings: React.FC = () => {
         Saturday: 'never',
         Sunday: 'never',
       });
+      setWeeklyPortions(user.user_metadata.weeklyPortions || {});
     }
   };
 
@@ -97,7 +99,8 @@ const UserSettings: React.FC = () => {
         portions: portions.trim(),
         joinDinners,
         defaultResponse,
-        dinnerDays
+        dinnerDays,
+        weeklyPortions
       }
     });
 
@@ -303,22 +306,18 @@ const UserSettings: React.FC = () => {
                         {dinnerDays[day] !== 'never' && (
                           <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
                             <Utensils className="text-gray-500 w-4 h-4 mr-1" />
-                            {dinnerDays[day] === 'always' ? (
-                              <input
-                                type="number"
-                                value={portions}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  setPortions(e.target.value);
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                                min="0.5"
-                                step="0.5"
-                                className="w-12 p-1 text-center bg-transparent"
-                              />
-                            ) : (
-                              <span className="w-12 p-1 text-center">{portions}</span>
-                            )}
+                            <input
+                              type="number"
+                              value={weeklyPortions[day] || portions}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                setWeeklyPortions(prev => ({...prev, [day]: e.target.value}));
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              min="0.5"
+                              step="0.5"
+                              className="w-12 p-1 text-center bg-transparent"
+                            />
                           </div>
                         )}
                       </Button>
