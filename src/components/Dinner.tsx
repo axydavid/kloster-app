@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import SimpleUserIcon from './SimpleUserIcon';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { UserContext } from './Layout';
