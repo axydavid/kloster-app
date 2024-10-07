@@ -2,6 +2,9 @@ import React, { useEffect, useCallback } from 'react';
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Users, ShoppingBag, Utensils } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
 interface LongPressModalProps {
   isOpen: boolean;
@@ -32,6 +35,22 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [isOpen, handleEscapeKey]);
+
+  useEffect(() => {
+    const fetchUserPortions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase.rpc('get_user_metadata', { user_id: user.id });
+        if (!error && data) {
+          setUserPortions(data.portions || 1);
+        }
+      }
+    };
+
+    if (isOpen) {
+      fetchUserPortions();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
