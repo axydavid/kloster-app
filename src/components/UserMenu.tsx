@@ -17,7 +17,11 @@ interface UserMenuProps {
 const UserMenu: React.FC<UserMenuProps> = ({ session, isAdmin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const user = session.user;
+  const user = {
+    id: session.user.id,
+    email: session.user.email,
+    raw_user_meta_data: session.user.user_metadata
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
