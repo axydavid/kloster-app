@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
-import { Utensils, Users } from 'lucide-react';
+import { Users, ShoppingBag } from 'lucide-react';
 
 interface LongPressModalProps {
   isOpen: boolean;
@@ -19,6 +19,21 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
   initialPortions,
 }) => {
   const [userPortions, setUserPortions] = React.useState(initialPortions);
+
+  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen, handleEscapeKey]);
 
   if (!isOpen) return null;
 
@@ -58,7 +73,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
             onClick={() => onTakeAway(userPortions)}
             className="flex-1 h-16 bg-green-500 hover:bg-green-600"
           >
-            <Utensils className="mr-2" />
+            <ShoppingBag className="mr-2" />
             Take Away
           </Button>
         </div>
