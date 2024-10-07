@@ -508,12 +508,8 @@ const Dinner: React.FC = () => {
       const existingAttendantIndex = attendants.findIndex(a => a.id === currentUserId);
 
       if (existingAttendantIndex !== -1) {
-        // Update existing attendance
-        attendants[existingAttendantIndex] = {
-          ...attendants[existingAttendantIndex],
-          portions,
-          isTakeAway
-        };
+        // Remove existing attendance
+        attendants.splice(existingAttendantIndex, 1);
       } else {
         // Add new attendance
         attendants.push({
