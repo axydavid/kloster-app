@@ -6,7 +6,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { createClient } from '@supabase/supabase-js';
-import SimpleUserIcon from './SimpleUserIcon';
+import UserIcon from './UserIcon';
 import { UserContext } from './Layout';
 import Toast from './Toast';
 
@@ -299,7 +299,7 @@ const Budget: React.FC<BudgetProps> = ({ isAdmin }) => {
                       {currentUser && (
                         <SelectItem key={currentUser.id} value={currentUser.id}>
                           <div className="flex items-center">
-                            <SimpleUserIcon
+                            <UserIcon
                               user={{
                                 id: currentUser.id,
                                 email: currentUser.email || '',
@@ -319,7 +319,7 @@ const Budget: React.FC<BudgetProps> = ({ isAdmin }) => {
                         .map((user) => (
                           <SelectItem key={user.id} value={user.id}>
                             <div className="flex items-center">
-                              <SimpleUserIcon
+                              <UserIcon
                                 user={user}
                                 size="small"
                               />

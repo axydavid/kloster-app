@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
-import SimpleUserIcon from './SimpleUserIcon';
+import UserIcon from './UserIcon';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { UserContext } from './Layout';
 import { useNavigate } from 'react-router-dom';
@@ -660,7 +660,7 @@ const Dinner: React.FC = () => {
                   {day.cooks && day.cooks.length > 0 ? (
                     <div className="flex items-center justify-between">
                       {day.cooks.map((cookId) => (
-                        <SimpleUserIcon
+                        <UserIcon
                           key={cookId}
                           user={users.find(user => user.id === cookId) || { id: cookId, raw_user_meta_data: {} }}
                           showRemoveButton={cookId === currentUserId}
@@ -821,7 +821,7 @@ const Dinner: React.FC = () => {
                           {day.attendants
                             .filter(attendant => !attendant.id.startsWith('guest-'))
                             .map((attendant) => (
-                              <SimpleUserIcon
+                              <UserIcon
                                 key={attendant.id}
                                 user={users.find(user => user.id === attendant.id) || { id: attendant.id, raw_user_meta_data: {} }}
                                 isTakeAway={attendant.isTakeAway}
@@ -846,7 +846,7 @@ const Dinner: React.FC = () => {
                           }}
                         >
                           {day.attendants.some(a => a.id.startsWith('guest-')) ? (
-                            <span className="text-blue-500 font-bold text-sm md:text-lg flex items-center justify-center w-full h-full">
+                            <span className="text-gray-500 font-bold text-sm md:text-lg flex items-center justify-center w-full h-full">
                               {day.attendants.filter(a => a.id.startsWith('guest-')).length}G
                             </span>
                           ) : (

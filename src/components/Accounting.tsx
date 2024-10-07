@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { UserContext } from './Layout';
-import SimpleUserIcon from './SimpleUserIcon';
+import UserIcon from './UserIcon';
 import { UserData } from './Layout';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
@@ -177,7 +177,7 @@ const Accounting: React.FC = () => {
                 {users && users.map(user => (
                   <SelectItem key={user.id} value={user.id}>
                     <div className="flex items-center">
-                      <SimpleUserIcon user={user} size="small" />
+                      <UserIcon user={user} size="small" />
                       <span className="ml-2">{user.raw_user_meta_data?.display_name || user.id}</span>
                     </div>
                   </SelectItem>
@@ -226,7 +226,7 @@ const Accounting: React.FC = () => {
                                 const user = users && users.find(u => u.id === cookId);
                                 return (
                                   <div key={cookId} className="flex items-center space-x-1">
-                                    <SimpleUserIcon
+                                    <UserIcon
                                       user={user || { id: cookId, raw_user_meta_data: {} }}
                                       size="small"
                                     />

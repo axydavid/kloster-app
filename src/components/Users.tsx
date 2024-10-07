@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import SimpleUserIcon from './SimpleUserIcon';
+import UserIcon from './UserIcon';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
@@ -190,7 +190,7 @@ const Users: React.FC = () => {
       {users.map((user: UserData) => (
         <div key={user.id} className="flex items-center justify-between mb-4 p-2 border-b">
           <div className="flex items-center">
-            <SimpleUserIcon user={user} size="small" />
+            <UserIcon user={user} size="small" />
             <span className="ml-2">{user.raw_user_meta_data?.display_name || user.email}</span>
           </div>
           <div className="flex items-center space-x-2">

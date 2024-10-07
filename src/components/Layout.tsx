@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
-import UserIconMenu from './UserIconMenu';
+import UserMenu from './UserMenu';
 import { Button } from "./ui/button"
 import { LayoutDashboard, UtensilsCrossed, WashingMachine, ShieldCheck, Wallet, Calculator, Menu, X, BedDouble } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
@@ -117,7 +117,7 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
                 {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
               {session && (
-                <UserIconMenu session={session} isAdmin={isAdmin} />
+                <UserMenu session={session} isAdmin={isAdmin} />
               )}
             </div>
           </nav>

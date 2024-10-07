@@ -52,7 +52,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
                 onChange={(e) => setUserPortions(Number(e.target.value))}
                 min={1}
                 max={10}
-                className="w-20 pl-8 pr-2 text-center bg-gray-100 text-blue-500 font-bold text-lg"
+                className="w-20 pl-8 pr-2 text-center bg-gray-100 text-gray-500 font-bold text-xl"
                 onFocus={(e) => e.target.select()}
                 style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
               />
