@@ -43,23 +43,22 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <h2 className="text-xl font-bold mr-2">Custom Join</h2>
-            <Utensils className="text-gray-500" />
+            <Utensils className="text-gray-500 mr-2" />
+            <Input
+              type="number"
+              id="portions"
+              value={userPortions}
+              onChange={(e) => setUserPortions(Number(e.target.value))}
+              min={1}
+              max={10}
+              className="w-16 text-center"
+            />
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        </div>
-        <div className="mb-4">
-          <Input
-            type="number"
-            id="portions"
-            value={userPortions}
-            onChange={(e) => setUserPortions(Number(e.target.value))}
-            min={1}
-            className="mt-1"
-          />
         </div>
         <div className="flex justify-center space-x-4">
           <Button 
