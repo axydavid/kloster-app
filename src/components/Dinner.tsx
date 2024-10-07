@@ -881,7 +881,7 @@ const Dinner: React.FC = () => {
         <Button onClick={() => changeWeek(1)}>Next 4 Weeks</Button>
       </div>
     </Card>
-<LongPressModal
+    <LongPressModal
   isOpen={isLongPressModalOpen}
   onClose={() => setIsLongPressModalOpen(false)}
   onJoin={(portions) => {
