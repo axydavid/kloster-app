@@ -24,6 +24,11 @@ interface UserIconProps {
 const UserIcon: React.FC<UserIconProps> = ({ user, guests = 0, showRemoveButton = false, onRemove, onClick, isTakeAway = false, size = 'normal' }) => {
   const displayName = user.raw_user_meta_data?.display_name || user.email?.split('@')[0] || user.id;
   const backgroundColor = user.raw_user_meta_data?.iconColor || user.raw_user_meta_data?.icon_color || '#007bff';
+  
+  const getInitials = (name: string) => {
+    if (name === "Betina & Frank") return "F&B";
+    return name.slice(0, 2).toUpperCase();
+  };
 
   const renderGuestIcon = (guestCount: number) => (
     <div
@@ -45,7 +50,7 @@ const UserIcon: React.FC<UserIconProps> = ({ user, guests = 0, showRemoveButton 
           style={{ backgroundColor }}
           title={`${displayName}${isTakeAway ? ' (Take-away)' : ''}`}
         >
-          {displayName.slice(0, 2).toUpperCase()}
+          {getInitials(displayName)}
           {isTakeAway && (
             <div className="absolute bottom-0 left-0 bg-white rounded-full p-1">
               <ShoppingBag size={size === 'small' ? 10 : 14} className="text-gray-600" />
