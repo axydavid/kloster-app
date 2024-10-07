@@ -8,11 +8,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
+import { Utensils } from 'lucide-react';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
 interface DinnerDays {
-  [key: string]: 'always' | 'never' | 'default' | 'takeaway';
+  [key: string]: 'always' | 'never' | 'default' | 'takeaway' | string;
 }
 
 const presetColors = [
@@ -162,8 +163,16 @@ const UserSettings: React.FC = () => {
     }
   };
 
-  const handleDinnerDayChange = (day: string, value: 'always' | 'never' | 'default' | 'takeaway') => {
-    setDinnerDays(prev => ({ ...prev, [day]: value }));
+  const handleDinnerDayChange = (day: string, value: 'always' | 'never' | 'default' | 'takeaway' | string) => {
+    setDinnerDays(prev => {
+      const newDays = { ...prev };
+      if (typeof value === 'string' && !isNaN(parseFloat(value))) {
+        newDays[day] = value;
+      } else {
+        newDays[day] = value as 'always' | 'never' | 'default' | 'takeaway';
+      }
+      return newDays;
+    });
   };
 
   return (
@@ -270,27 +279,42 @@ const UserSettings: React.FC = () => {
                 <Label className="block text-sm font-medium text-gray-700 mb-2">Weekly Response Settings</Label>
                 <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
                   {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                    <Button
-                      key={day}
-                      variant="outline"
-                      className={`flex flex-col items-center justify-center h-20 p-2 ${dinnerDays[day] === 'always'
-                        ? 'bg-green-100 hover:bg-green-200'
-                        : dinnerDays[day] === 'never'
-                          ? 'bg-red-100 hover:bg-red-200'
-                          : ''
+                    <div key={day} className="flex flex-col items-center">
+                      <Button
+                        variant="outline"
+                        className={`flex flex-col items-center justify-center h-20 p-2 w-full ${
+                          dinnerDays[day] === 'always'
+                            ? 'bg-green-100 hover:bg-green-200'
+                            : dinnerDays[day] === 'never'
+                            ? 'bg-red-100 hover:bg-red-200'
+                            : ''
                         }`}
-                      onClick={() => {
-                        const currentValue = dinnerDays[day];
-                        const newValue =
-                          currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
-                        handleDinnerDayChange(day, newValue);
-                      }}
-                    >
-                      <span className="text-sm font-medium">{day.slice(0, 3)}</span>
-                      <span className="text-xs text-muted-foreground mt-1">
-                        {dinnerDays[day] === 'always' ? 'Always' : dinnerDays[day] === 'takeaway' ? 'Take Away' : 'Never'}
-                      </span>
-                    </Button>
+                        onClick={() => {
+                          const currentValue = dinnerDays[day];
+                          const newValue =
+                            currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
+                          handleDinnerDayChange(day, newValue);
+                        }}
+                      >
+                        <span className="text-sm font-medium">{day.slice(0, 3)}</span>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          {dinnerDays[day] === 'always' ? 'Always' : dinnerDays[day] === 'takeaway' ? 'Take Away' : 'Never'}
+                        </span>
+                      </Button>
+                      {portions !== '1' && dinnerDays[day] !== 'never' && (
+                        <div className="flex items-center mt-1">
+                          <Utensils className="text-gray-500 w-4 h-4 mr-1" />
+                          <Input
+                            type="number"
+                            value={dinnerDays[day] === 'always' ? portions : '1'}
+                            onChange={(e) => handleDinnerDayChange(day, e.target.value)}
+                            min="0.5"
+                            step="0.5"
+                            className="w-12 p-1 text-center"
+                          />
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
