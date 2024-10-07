@@ -1,6 +1,5 @@
 import React from 'react';
 import { Utensils } from 'lucide-react';
-import { Utensils } from 'lucide-react';
 
 interface User {
   id: string;
