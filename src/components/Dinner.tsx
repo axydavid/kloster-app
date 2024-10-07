@@ -8,7 +8,7 @@ import SimpleUserIcon from './SimpleUserIcon';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { UserContext } from './Layout';
 import { useNavigate } from 'react-router-dom';
-import { TakeoutDining } from '@mui/icons-material';
+import { Utensils } from 'lucide-react';
 import LongPressModal from './LongPressModal';
 import cowIcon from '../icons/cow.png';
 import pigIcon from '../icons/pig.png';
@@ -186,7 +186,7 @@ const Dinner: React.FC = () => {
         if (error) throw error;
         setUserPortions(data?.portions || 1);
       })
-      .catch(error => console.error('Error fetching user metadata:', error));
+      .catch((error: any) => console.error('Error fetching user metadata:', error));
   }, [currentUserId]);
 
   const closePopover = useCallback(() => {

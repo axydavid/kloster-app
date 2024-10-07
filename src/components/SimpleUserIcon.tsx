@@ -1,4 +1,5 @@
 import React from 'react';
+import { Utensils } from 'lucide-react';
 
 interface User {
   id: string;
@@ -46,7 +47,9 @@ const SimpleUserIcon: React.FC<SimpleUserIconProps> = ({ user, guests = 0, showR
         >
           {displayName.slice(0, 2).toUpperCase()}
           {isTakeAway && (
-            <div className={`absolute ${size === 'small' ? '-top-0.5 -right-0.5 w-2 h-2' : '-top-1 -right-1 w-3 h-3'} bg-yellow-400 rounded-full border border-white`}></div>
+            <div className="absolute bottom-0 right-0 bg-white rounded-full p-1">
+              <Utensils size={size === 'small' ? 10 : 14} className="text-gray-600" />
+            </div>
           )}
         </div>
       )}
