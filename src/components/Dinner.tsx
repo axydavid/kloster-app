@@ -750,9 +750,32 @@ const Dinner: React.FC = () => {
                 </div>
                 <div
                   className="flex-1 p-2 relative cursor-pointer"
-                  onClick={() => {
-                    const currentAttendant = day.attendants.find(a => a.id === currentUserId);
-                    toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
+                  onMouseDown={(e) => {
+                    if (isIngredientsPopupOpen) {
+                      return;
+                    }
+                    const startTime = new Date().getTime();
+                    const timer = setTimeout(() => {
+                      handleLongPress(day);
+                      setLongPressedDay(day);
+                      setIsLongPressModalOpen(true);
+                    }, 500);
+                    const clearTimer = () => {
+                      clearTimeout(timer);
+                      document.removeEventListener('mouseup', handleMouseUp);
+                      document.removeEventListener('mousemove', clearTimer);
+                    };
+                    const handleMouseUp = () => {
+                      clearTimer();
+                      const endTime = new Date().getTime();
+                      if (endTime - startTime < 500) {
+                        const currentAttendant = day.attendants.find(a => a.id === currentUserId);
+                        toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
+                      }
+                    };
+                    document.addEventListener('mouseup', handleMouseUp);
+                    document.addEventListener('mousemove', clearTimer);
+                    e.currentTarget.addEventListener('mouseleave', clearTimer, { once: true });
                   }}
                   onContextMenu={(e) => {
                     e.preventDefault();
@@ -761,24 +784,6 @@ const Dinner: React.FC = () => {
                       setLongPressedDay(day);
                       setIsLongPressModalOpen(true);
                     }
-                  }}
-                  onMouseDown={(e) => {
-                    if (isIngredientsPopupOpen) {
-                      return;
-                    }
-                    const timer = setTimeout(() => {
-                      handleLongPress(day);
-                      setLongPressedDay(day);
-                      setIsLongPressModalOpen(true);
-                    }, 500);
-                    const clearTimer = () => {
-                      clearTimeout(timer);
-                      document.removeEventListener('mouseup', clearTimer);
-                      document.removeEventListener('mousemove', clearTimer);
-                    };
-                    document.addEventListener('mouseup', clearTimer);
-                    document.addEventListener('mousemove', clearTimer);
-                    e.currentTarget.addEventListener('mouseleave', clearTimer, { once: true });
                   }}
                   onTouchStart={(e) => {
                     const timer = setTimeout(() => {
