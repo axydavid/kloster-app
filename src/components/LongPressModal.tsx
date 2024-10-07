@@ -44,10 +44,12 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
           <div className="flex items-center">
             <h2 className="text-xl font-bold mr-2">Custom Join</h2>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-              <line x1="9" y1="9" x2="9.01" y2="9" />
-              <line x1="15" y1="9" x2="15.01" y2="9" />
+              <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+              <path d="M7 2v20" />
+              <path d="M21 15v5" />
+              <path d="M18.5 17.5L21 15l2.5 2.5" />
+              <path d="M21 15l2.5-2.5" />
+              <path d="M21 2v3c0 6-3 9-9 9h-5" />
             </svg>
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
