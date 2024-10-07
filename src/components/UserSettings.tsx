@@ -320,7 +320,7 @@ const UserSettings: React.FC = () => {
                                 e.stopPropagation();
                                 (e.target as HTMLInputElement).select();
                               }}
-                              className="w-12 p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              className="w-12 p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-gray-500"
                             />
                           </div>
                         )}
