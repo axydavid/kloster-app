@@ -5,6 +5,7 @@ import { Button } from "./ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Settings, ShieldCheck, LogOut } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import UserIcon from './UserIcon';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -17,9 +18,6 @@ const UserMenu: React.FC<UserMenuProps> = ({ session, isAdmin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const user = session.user;
-  const displayName = user.user_metadata.name || user.email;
-  const initials = displayName.slice(0, 2).toUpperCase();
-  const backgroundColor = user.user_metadata.iconColor || '#007bff';
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -29,11 +27,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ session, isAdmin }) => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold cursor-pointer"
-          style={{ backgroundColor }}
-        >
-          {initials}
+        <div className="cursor-pointer">
+          <UserIcon user={user} size="normal" />
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-40 p-0">
