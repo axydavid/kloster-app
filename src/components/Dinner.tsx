@@ -848,6 +848,15 @@ const Dinner: React.FC = () => {
                             const guestCount = day.attendants.filter(a => a.id.startsWith('guest-')).length;
                             setGuestCount(guestCount);
                           }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                          }}
+                          onTouchStart={(e) => {
+                            e.stopPropagation();
+                          }}
+                          onPointerDown={(e) => {
+                            e.stopPropagation();
+                          }}
                         >
                           {day.attendants.some(a => a.id.startsWith('guest-')) ? (
                             <span className="text-gray-500 font-bold text-sm md:text-lg flex items-center justify-center w-full h-full">
@@ -861,7 +870,7 @@ const Dinner: React.FC = () => {
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-60">
+                      <PopoverContent className="w-60" onClick={(e) => e.stopPropagation()}>
                         <div className="grid gap-4">
                           <div className="flex justify-between items-center">
                             <h4 className="font-bold leading-none">Guests</h4>
