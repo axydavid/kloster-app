@@ -462,7 +462,7 @@ const Dinner: React.FC = () => {
     }
   };
 
-  const toggleAttendance = async (date: string, isTakeAway: boolean = false, portions: number = 1) => {
+  const toggleAttendance = async (date: string, isTakeAway: boolean = false, portions: number = userPortions) => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
@@ -772,7 +772,7 @@ const Dinner: React.FC = () => {
                       const endTime = new Date().getTime();
                       if (endTime - startTime < 500) {
                         const currentAttendant = day.attendants.find(a => a.id === currentUserId);
-                        toggleAttendance(day.date, currentAttendant?.isTakeAway || false);
+                        toggleAttendance(day.date, currentAttendant?.isTakeAway || false, userPortions);
                       }
                     };
                     const handleMouseMove = (moveEvent: MouseEvent) => {
