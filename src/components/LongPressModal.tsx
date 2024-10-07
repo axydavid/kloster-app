@@ -51,8 +51,9 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
               onChange={(e) => setUserPortions(Number(e.target.value))}
               min={1}
               max={10}
-              className="w-16 text-center mr-2"
+              className="w-16 text-center mr-2 bg-gray-100"
               onFocus={(e) => e.target.select()}
+              style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
             />
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
