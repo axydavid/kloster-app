@@ -761,6 +761,14 @@ const Dinner: React.FC = () => {
                     e.preventDefault();
                     handleLongPress(day);
                   }}
+                  onMouseDown={(e) => {
+                    if (e.button === 0) { // Left mouse button
+                      const timer = setTimeout(() => handleLongPress(day), 500);
+                      const clearTimer = () => clearTimeout(timer);
+                      document.addEventListener('mouseup', clearTimer, { once: true });
+                      document.addEventListener('mousemove', clearTimer, { once: true });
+                    }
+                  }}
                   onTouchStart={(e) => {
                     const timer = setTimeout(() => handleLongPress(day), 500);
                     const clearTimer = () => clearTimeout(timer);
