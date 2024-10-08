@@ -137,6 +137,7 @@ const UserSettings: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('handleSubmit called'); // Add this line
 
     // Update dinnerDays statuses for suspended days
     const updatedDinnerDays = { ...dinnerDays };
@@ -434,6 +435,7 @@ const UserSettings: React.FC = () => {
                           return (
                             <div key={day} className="flex flex-col items-center">
                               <Button
+                                type="button"
                                 variant="outline"
                                 className={`flex flex-col items-center justify-center h-24 p-2 w-full ${
                                   isSuspended
@@ -482,6 +484,11 @@ const UserSettings: React.FC = () => {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         (e.target as HTMLInputElement).select();
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault(); // Prevent form submission
+                                        }
                                       }}
                                       className="w-full p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-gray-500"
                                     />
