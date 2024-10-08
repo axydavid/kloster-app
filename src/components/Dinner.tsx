@@ -367,7 +367,7 @@ const Dinner: React.FC = () => {
           const { data: userData, error: userDataError } = await supabase.rpc('get_user_metadata', { user_id: currentUserId });
           if (userDataError) throw userDataError;
           const userPortions = userData?.portions || 1;
-          updateData.attendants.push({ id: currentUserId, portions: userPortions, isTakeAway: false });
+          updateData.attendants.push({ id: currentUserId, portions: userPortions, isTakeAway: false, isAutomaticallySet: false });
         }
       }
 
@@ -443,7 +443,7 @@ const Dinner: React.FC = () => {
           const { data: userData, error: userDataError } = await supabase.rpc('get_user_metadata', { user_id: currentUserId });
           if (userDataError) throw userDataError;
           const userPortions = userData?.portions || 1;
-          updateData.attendants.push({ id: currentUserId, portions: userPortions, isTakeAway: false });
+          updateData.attendants.push({ id: currentUserId, portions: userPortions, isTakeAway: false, isAutomaticallySet: false });
         }
       }
 
@@ -586,7 +586,7 @@ const Dinner: React.FC = () => {
       // Update the local state immediately
       setDinnerDays(prevDays =>
         prevDays.map(d =>
-          d.date === date ? { ...d, attendants: updatedAttendants, cooks, ingredients } : d
+          d.date === date ? { ...d, attendants: updatedAttendants as Attendant[], cooks, ingredients } : d
         )
       );
 
