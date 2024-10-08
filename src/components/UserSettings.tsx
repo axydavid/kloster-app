@@ -366,87 +366,96 @@ const UserSettings: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="joinDinners"
-                checked={joinDinners}
-                onCheckedChange={(checked) => setJoinDinners(checked as boolean)}
-              />
-              <Label htmlFor="joinDinners" className="text-sm font-medium text-gray-700">Join Dinners</Label>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div
+                className="bg-secondary p-4 rounded-lg shadow-sm cursor-pointer select-none flex-1"
+              // onClick={(e) => {
+              //   e.preventDefault();
+              //   setJoinDinners(!joinDinners);
+              // }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="joinDinners" className="text-lg font-semibold cursor-pointer" onClick={(e) => e.stopPropagation()}>Join Dinners</Label>
+                  <Checkbox
+                    id="joinDinners"
+                    checked={joinDinners}
+                    onCheckedChange={(checked) => setJoinDinners(checked as boolean)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">Enable to join community dinners</p>
+                {joinDinners && (
+                  <div className="mt-4">
+                    <div>
+                      <Label htmlFor="defaultResponse" className="block text-sm font-medium text-gray-700 mb-2">Default Response</Label>
+                      <Select value={defaultResponse} onValueChange={(value: 'always' | 'never') => handleDefaultResponseChange(value)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select default response" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="never">Never Join Automatically</SelectItem>
+                          <SelectItem value="always">Always Join Automatically</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Daily Response</Label>
+                      <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
+                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                          <div key={day} className="flex flex-col items-center">
+                            <Button
+                              variant="outline"
+                              className={`flex flex-col items-center justify-center h-24 p-2  w-full ${dinnerDays[day].status === 'always'
+                                  ? 'bg-green-100 hover:bg-green-200'
+                                  : dinnerDays[day].status === 'never'
+                                    ? 'bg-red-100 hover:bg-red-200'
+                                    : 'bg-gray-100 hover:bg-gray-200'
+                                }`}
+                              onClick={() => {
+                                const currentValue = dinnerDays[day].status;
+                                const newValue =
+                                  currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
+                                handleDinnerDayChange(day, newValue);
+                              }}
+                            >
+                              <span className="text-sm font-medium">{day.slice(0, 3)}</span>
+                              <span className="text-xs text-muted-foreground mt-1">
+                                {dinnerDays[day].status === 'always' ? 'Always' : dinnerDays[day].status === 'takeaway' ? 'Take Away' : 'Never'}
+                              </span>
+                              {dinnerDays[day].status !== 'never' && (
+                                <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
+                                  <Utensils className="text-gray-500 w-4 h-4 mr-1 shrink-0" />
+                                  <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    pattern="[0-9]*\.?[0-9]*"
+                                    value={dinnerDays[day].portions}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                                      handlePortionChange(day, value);
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      (e.target as HTMLInputElement).select();
+                                    }}
+                                    className="w-full p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-gray-500"
+                                  />
+                                </div>
+                              )}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <p className="text-sm text-gray-500">
-              Enable this to join community dinners. You'll be able to participate in meal planning and attend dinners.
-            </p>
           </div>
 
-          {joinDinners && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="defaultResponse" className="block text-sm font-medium text-gray-700">Default Response</Label>
-                <Select value={defaultResponse} onValueChange={(value: 'always' | 'never') => handleDefaultResponseChange(value)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select default response" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="never">Never Join Automatically</SelectItem>
-                    <SelectItem value="always">Always Join Automatically</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
-              <div>
-                <Label className="block text-sm font-medium text-gray-700 mb-2">Weekly Response Settings</Label>
-                <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
-                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                    <div key={day} className="flex flex-col items-center">
-                      <Button
-                        variant="outline"
-                        className={`flex flex-col items-center justify-center h-24 p-2 w-full ${
-                          dinnerDays[day].status === 'always'
-                            ? 'bg-green-100 hover:bg-green-200'
-                            : dinnerDays[day].status === 'never'
-                            ? 'bg-red-100 hover:bg-red-200'
-                            : 'bg-gray-100 hover:bg-gray-200'
-                        }`}
-                        onClick={() => {
-                          const currentValue = dinnerDays[day].status;
-                          const newValue =
-                            currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
-                          handleDinnerDayChange(day, newValue);
-                        }}
-                      >
-                        <span className="text-sm font-medium">{day.slice(0, 3)}</span>
-                        <span className="text-xs text-muted-foreground mt-1">
-                          {dinnerDays[day].status === 'always' ? 'Always' : dinnerDays[day].status === 'takeaway' ? 'Take Away' : 'Never'}
-                        </span>
-                        {dinnerDays[day].status !== 'never' && (
-                          <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
-                            <Utensils className="text-gray-500 w-4 h-4 mr-1" />
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              pattern="[0-9]*\.?[0-9]*"
-                              value={dinnerDays[day].portions}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                const value = e.target.value.replace(/[^0-9.]/g, '');
-                                handlePortionChange(day, value);
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                (e.target as HTMLInputElement).select();
-                              }}
-                              className="w-12 p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-gray-500"
-                            />
-                          </div>
-                        )}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           <Button type="submit" className="w-full">Save Settings</Button>
         </form>
