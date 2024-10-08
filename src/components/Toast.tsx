@@ -4,11 +4,11 @@ export type ToastType = 'loading' | 'success' | 'error';
 
 interface ToastProps {
   message: string;
-  type: ToastType;
+  type?: ToastType;
   onClose: () => void;
 }
 
-const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+const Toast: React.FC<ToastProps> = ({ message, type = 'success', onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
