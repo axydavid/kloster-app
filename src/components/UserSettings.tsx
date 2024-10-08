@@ -154,6 +154,9 @@ const UserSettings: React.FC = () => {
             }
           }
         }
+
+        // Update dinner_days for the next 28 days
+        await updateDinnerDaysForNextMonth(user?.id || '', formattedDinnerDays);
       } else {
         // Remove user from dinner array if they've opted out
         const { data: { user } } = await supabase.auth.getUser();
@@ -177,12 +180,90 @@ const UserSettings: React.FC = () => {
               console.error('Error updating admin settings:', updateError);
             }
           }
+
+          // Remove user from all future dinner_days
+          await removeDinnerDaysForUser(user.id);
         }
       }
 
       // Show toast message only after all operations are complete
       setShowToast(true);
       return true;
+    }
+  };
+
+  const updateDinnerDaysForNextMonth = async (userId: string, dinnerDays: { [key: string]: { status: string; portions: string } }) => {
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime() + 28 * 24 * 60 * 60 * 1000);
+
+    for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+      const dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'long' });
+      const daySettings = dinnerDays[dayOfWeek];
+
+      if (daySettings.status === 'always' || daySettings.status === 'takeaway') {
+        const { data, error } = await supabase
+          .from('dinner_days')
+          .select('attendants')
+          .eq('date', d.toISOString().split('T')[0])
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching dinner day:', error);
+          continue;
+        }
+
+        let attendants = data?.attendants || [];
+        const existingAttendantIndex = attendants.findIndex((a: { id: string }) => a.id === userId);
+
+        if (existingAttendantIndex !== -1) {
+          attendants[existingAttendantIndex] = {
+            ...attendants[existingAttendantIndex],
+            portions: Number(daySettings.portions),
+            isTakeAway: daySettings.status === 'takeaway',
+            isAutomaticallySet: true
+          };
+        } else {
+          attendants.push({
+            id: userId,
+            portions: Number(daySettings.portions),
+            isTakeAway: daySettings.status === 'takeaway',
+            isAutomaticallySet: true
+          });
+        }
+
+        const { error: upsertError } = await supabase
+          .from('dinner_days')
+          .upsert({ date: d.toISOString().split('T')[0], attendants });
+
+        if (upsertError) {
+          console.error('Error updating dinner day:', upsertError);
+        }
+      }
+    }
+  };
+
+  const removeDinnerDaysForUser = async (userId: string) => {
+    const startDate = new Date();
+    const { data: dinnerDays, error } = await supabase
+      .from('dinner_days')
+      .select('date, attendants')
+      .gte('date', startDate.toISOString().split('T')[0]);
+
+    if (error) {
+      console.error('Error fetching dinner days:', error);
+      return;
+    }
+
+    for (const day of dinnerDays) {
+      const updatedAttendants = day.attendants.filter((a: { id: string }) => a.id !== userId);
+      const { error: updateError } = await supabase
+        .from('dinner_days')
+        .update({ attendants: updatedAttendants })
+        .eq('date', day.date);
+
+      if (updateError) {
+        console.error('Error updating dinner day:', updateError);
+      }
     }
   };
 

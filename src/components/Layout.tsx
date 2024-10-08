@@ -9,6 +9,83 @@ import { ReactComponent as Logo } from '../icons/logo.svg';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
+const updateDinnerDaysJob = async () => {
+  const { data: users, error: usersError } = await supabase.rpc('get_all_users');
+  if (usersError) {
+    console.error('Error fetching users:', usersError);
+    return;
+  }
+
+  const today = new Date();
+  const futureDate = new Date(today.getTime() + 28 * 24 * 60 * 60 * 1000);
+
+  for (const user of users) {
+    if (user.raw_user_meta_data.joinDinners) {
+      const dinnerDays = user.raw_user_meta_data.dinnerDays || {};
+      const dayOfWeek = futureDate.toLocaleDateString('en-US', { weekday: 'long' });
+      const daySettings = dinnerDays[dayOfWeek];
+
+      if (daySettings && (daySettings.status === 'always' || daySettings.status === 'takeaway')) {
+        const { data, error } = await supabase
+          .from('dinner_days')
+          .select('attendants')
+          .eq('date', futureDate.toISOString().split('T')[0])
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching dinner day:', error);
+          continue;
+        }
+
+        let attendants = data?.attendants || [];
+        const existingAttendantIndex = attendants.findIndex((a: any) => a.id === user.id);
+
+        if (existingAttendantIndex !== -1) {
+          attendants[existingAttendantIndex] = {
+            ...attendants[existingAttendantIndex],
+            portions: Number(daySettings.portions),
+            isTakeAway: daySettings.status === 'takeaway',
+            isAutomaticallySet: true
+          };
+        } else {
+          attendants.push({
+            id: user.id,
+            portions: Number(daySettings.portions),
+            isTakeAway: daySettings.status === 'takeaway',
+            isAutomaticallySet: true
+          });
+        }
+
+        const { error: upsertError } = await supabase
+          .from('dinner_days')
+          .upsert({ date: futureDate.toISOString().split('T')[0], attendants });
+
+        if (upsertError) {
+          console.error('Error updating dinner day:', upsertError);
+        }
+      }
+    }
+  }
+};
+
+// Set up the job to run at midnight
+const setupDinnerDaysJob = () => {
+  const now = new Date();
+  const night = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1, // the next day
+    0, 0, 0 // at 00:00:00 hours
+  );
+  const msToMidnight = night.getTime() - now.getTime();
+
+  setTimeout(() => {
+    updateDinnerDaysJob();
+    // Then set it to run every 24 hours
+    setInterval(updateDinnerDaysJob, 24 * 60 * 60 * 1000);
+  }, msToMidnight);
+};
+
 export interface UserData {
   id: string;
   type?: string;
@@ -48,6 +125,7 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
     };
 
     fetchAllUsers();
+    setupDinnerDaysJob(); // Set up the job to run at midnight
   }, []);
 
   // Note: Do not change this to use a "users" table. We're using Supabase Auth for user data.
