@@ -116,9 +116,6 @@ const UserSettings: React.FC = () => {
       console.error('Error updating user settings:', error);
       return false;
     } else {
-      // Refresh user settings after successful update
-      await fetchUserSettings();
-
       // Update admin_settings table
       if (joinDinners) {
         const { data: { user } } = await supabase.auth.getUser();
