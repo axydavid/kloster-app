@@ -106,7 +106,7 @@ const UserSettings: React.FC = () => {
     const formattedDinnerDays = Object.entries(dinnerDays).reduce((acc, [day, value]) => {
       acc[day] = {
         status: value.status,
-        portions: updatedDay === day ? updatedPortions! : value.portions
+        portions: value.portions
       };
       return acc;
     }, {} as { [key: string]: { status: string; portions: string } });
