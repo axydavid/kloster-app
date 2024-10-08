@@ -106,8 +106,10 @@ const UserSettings: React.FC = () => {
     setDefaultResponse(value);
     setDinnerDays(prevDays => {
       const newDays = { ...prevDays };
-      Object.keys(newDays).forEach(day => {
-        newDays[day] = { ...newDays[day], status: value };
+      weekdays.forEach((day, index) => {
+        if (!adminSettings.suspendedWeekdays.includes(index + 1)) {
+          newDays[day] = { ...newDays[day], status: value };
+        }
       });
       return newDays;
     });
