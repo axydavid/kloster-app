@@ -55,13 +55,13 @@ const UserSettings: React.FC = () => {
   const [joinDinners, setJoinDinners] = useState(false);
   const [defaultResponse, setDefaultResponse] = useState<'never' | 'always'>('never');
   const [dinnerDays, setDinnerDays] = useState<DinnerDays>({
-    Monday: { status: 'never', portions: portions },
-    Tuesday: { status: 'never', portions: portions },
-    Wednesday: { status: 'never', portions: portions },
-    Thursday: { status: 'never', portions: portions },
-    Friday: { status: 'never', portions: portions },
-    Saturday: { status: 'never', portions: portions },
-    Sunday: { status: 'never', portions: portions },
+    Monday: { status: 'never', portions: '2' },
+    Tuesday: { status: 'never', portions: '2' },
+    Wednesday: { status: 'never', portions: '2' },
+    Thursday: { status: 'never', portions: '2' },
+    Friday: { status: 'never', portions: '2' },
+    Saturday: { status: 'never', portions: '2' },
+    Sunday: { status: 'never', portions: '2' },
   });
   const [showToast, setShowToast] = useState(false);
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({ suspendedWeekdays: [] });
@@ -76,7 +76,8 @@ const UserSettings: React.FC = () => {
         setPortions(user.user_metadata.portions || '2');
         setJoinDinners(user.user_metadata.joinDinners || false);
         setDefaultResponse(user.user_metadata.defaultResponse || 'never');
-        setDinnerDays(user.user_metadata.dinnerDays || {
+        const userDinnerDays = user.user_metadata.dinnerDays || {};
+        const defaultDinnerDays = {
           Monday: { status: 'never', portions: '2' },
           Tuesday: { status: 'never', portions: '2' },
           Wednesday: { status: 'never', portions: '2' },
@@ -84,7 +85,15 @@ const UserSettings: React.FC = () => {
           Friday: { status: 'never', portions: '2' },
           Saturday: { status: 'never', portions: '2' },
           Sunday: { status: 'never', portions: '2' },
-        });
+        };
+        
+        setDinnerDays(Object.keys(defaultDinnerDays).reduce((acc, day) => {
+          acc[day] = {
+            status: userDinnerDays[day]?.status || 'never',
+            portions: userDinnerDays[day]?.portions || '2'
+          };
+          return acc;
+        }, {} as DinnerDays));
       }
 
       // Fetch admin settings
