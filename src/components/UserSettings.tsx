@@ -104,18 +104,18 @@ const UserSettings: React.FC = () => {
 
   const handleDefaultResponseChange = (value: 'always' | 'never') => {
     setDefaultResponse(value);
-    if (value === 'always') {
-      setDinnerDays(prevDays => {
-        const newDays = { ...prevDays };
-        weekdays.forEach((day, index) => {
-          if (!adminSettings.suspendedWeekdays.includes(index + 1)) {
-            newDays[day] = { ...newDays[day], status: 'always' };
-          }
-        });
-        return newDays;
+    setDinnerDays(prevDays => {
+      const newDays = { ...prevDays };
+      weekdays.forEach((day, index) => {
+        if (!adminSettings.suspendedWeekdays.includes(index + 1)) {
+          newDays[day] = { 
+            ...newDays[day], 
+            status: value === 'always' ? 'always' : 'never'
+          };
+        }
       });
-    }
-    // If value is 'never', we don't modify the dinner days
+      return newDays;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
