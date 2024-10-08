@@ -74,7 +74,6 @@ const UserSettings: React.FC = () => {
         setIconColor(user.user_metadata.iconColor || '#007bff');
         setPortions(user.user_metadata.portions || '1');
         setJoinDinners(user.user_metadata.joinDinners || false);
-        setDefaultResponse(user.user_metadata.defaultResponse || 'never');
         const userDinnerDays = user.user_metadata.dinnerDays || {};
         const defaultDinnerDays = {
           Monday: { status: 'never', portions: '1' },
