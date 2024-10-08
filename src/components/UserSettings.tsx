@@ -49,19 +49,19 @@ const presetColors = [
 const UserSettings: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [iconColor, setIconColor] = useState('#007bff');
-  const [portions, setPortions] = useState('2');
+  const [portions, setPortions] = useState('1');
   const [weeklyPortions, setWeeklyPortions] = useState<{ [key: string]: string }>({});
   const [isColorPopoverOpen, setIsColorPopoverOpen] = useState(false);
   const [joinDinners, setJoinDinners] = useState(false);
   const [defaultResponse, setDefaultResponse] = useState<'never' | 'always'>('never');
   const [dinnerDays, setDinnerDays] = useState<DinnerDays>({
-    Monday: { status: 'never', portions: '2' },
-    Tuesday: { status: 'never', portions: '2' },
-    Wednesday: { status: 'never', portions: '2' },
-    Thursday: { status: 'never', portions: '2' },
-    Friday: { status: 'never', portions: '2' },
-    Saturday: { status: 'never', portions: '2' },
-    Sunday: { status: 'never', portions: '2' },
+    Monday: { status: 'never', portions: '1' },
+    Tuesday: { status: 'never', portions: '1' },
+    Wednesday: { status: 'never', portions: '1' },
+    Thursday: { status: 'never', portions: '1' },
+    Friday: { status: 'never', portions: '1' },
+    Saturday: { status: 'never', portions: '1' },
+    Sunday: { status: 'never', portions: '1' },
   });
   const [showToast, setShowToast] = useState(false);
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({ suspendedWeekdays: [] });
@@ -73,24 +73,24 @@ const UserSettings: React.FC = () => {
       if (user) {
         setDisplayName(user.user_metadata.display_name || user.email || '');
         setIconColor(user.user_metadata.iconColor || '#007bff');
-        setPortions(user.user_metadata.portions || '2');
+        setPortions(user.user_metadata.portions || '1');
         setJoinDinners(user.user_metadata.joinDinners || false);
         setDefaultResponse(user.user_metadata.defaultResponse || 'never');
         const userDinnerDays = user.user_metadata.dinnerDays || {};
         const defaultDinnerDays = {
-          Monday: { status: 'never', portions: '2' },
-          Tuesday: { status: 'never', portions: '2' },
-          Wednesday: { status: 'never', portions: '2' },
-          Thursday: { status: 'never', portions: '2' },
-          Friday: { status: 'never', portions: '2' },
-          Saturday: { status: 'never', portions: '2' },
-          Sunday: { status: 'never', portions: '2' },
+          Monday: { status: 'never', portions: '1' },
+          Tuesday: { status: 'never', portions: '1' },
+          Wednesday: { status: 'never', portions: '1' },
+          Thursday: { status: 'never', portions: '1' },
+          Friday: { status: 'never', portions: '1' },
+          Saturday: { status: 'never', portions: '1' },
+          Sunday: { status: 'never', portions: '1' },
         };
         
         setDinnerDays(Object.keys(defaultDinnerDays).reduce((acc, day) => {
           acc[day] = {
             status: userDinnerDays[day]?.status || 'never',
-            portions: userDinnerDays[day]?.portions || '2'
+            portions: userDinnerDays[day]?.portions || '1'
           };
           return acc;
         }, {} as DinnerDays));
