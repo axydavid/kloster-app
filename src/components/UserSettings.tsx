@@ -101,7 +101,7 @@ const UserSettings: React.FC = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent, updatedDay?: string, updatedPortions?: string) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formattedDinnerDays = Object.entries(dinnerDays).reduce((acc, [day, value]) => {
       acc[day] = {
@@ -286,12 +286,7 @@ const UserSettings: React.FC = () => {
     });
   }, []);
 
-  useEffect(() => {
-    const saveChanges = async () => {
-      await handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>);
-    };
-    saveChanges();
-  }, [dinnerDays]);
+  // Remove the useEffect hook that was causing automatic saves
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
