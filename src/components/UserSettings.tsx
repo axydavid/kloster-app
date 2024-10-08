@@ -53,7 +53,6 @@ const UserSettings: React.FC = () => {
   const [weeklyPortions, setWeeklyPortions] = useState<{ [key: string]: string }>({});
   const [isColorPopoverOpen, setIsColorPopoverOpen] = useState(false);
   const [joinDinners, setJoinDinners] = useState(false);
-  const [defaultResponse, setDefaultResponse] = useState<'never' | 'always'>('never');
   const [dinnerDays, setDinnerDays] = useState<DinnerDays>({
     Monday: { status: 'never', portions: '1' },
     Tuesday: { status: 'never', portions: '1' },
@@ -111,20 +110,17 @@ const UserSettings: React.FC = () => {
     fetchSettings();
   }, []);
 
-  const handleDefaultResponseChange = (value: 'always' | 'never') => {
-    setDefaultResponse(value);
-    setDinnerDays(prevDays => {
-      const newDays = { ...prevDays };
-      weekdays.forEach((day, index) => {
-        if (!adminSettings.suspendedWeekdays.includes(index + 1)) {
-          newDays[day] = { 
-            ...newDays[day], 
-            status: value === 'always' ? 'always' : 'never'
-          };
-        }
+  const handleJoinDinnersChange = (checked: boolean) => {
+    setJoinDinners(checked);
+    if (!checked) {
+      setDinnerDays(prevDays => {
+        const newDays = { ...prevDays };
+        weekdays.forEach(day => {
+          newDays[day] = { ...newDays[day], status: 'never' };
+        });
+        return newDays;
       });
-      return newDays;
-    });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,7 +139,6 @@ const UserSettings: React.FC = () => {
         iconColor,
         portions: portions.trim(),
         joinDinners,
-        defaultResponse,
         dinnerDays: formattedDinnerDays
       }
     });
@@ -402,26 +397,13 @@ const UserSettings: React.FC = () => {
                   <Checkbox
                     id="joinDinners"
                     checked={joinDinners}
-                    onCheckedChange={(checked) => setJoinDinners(checked as boolean)}
+                    onCheckedChange={(checked) => handleJoinDinnersChange(checked as boolean)}
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">Enable to join community dinners</p>
                 {joinDinners && (
                   <div className="mt-4">
-                    <div>
-                      <Label htmlFor="defaultResponse" className="block text-sm font-medium text-gray-700 mb-2">Default Response</Label>
-                      <Select value={defaultResponse} onValueChange={(value: 'always' | 'never') => handleDefaultResponseChange(value)}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select default response" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="never">Never Join Automatically</SelectItem>
-                          <SelectItem value="always">Always Join Automatically</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
                     <div>
                       <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Daily Response</Label>
                       <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
