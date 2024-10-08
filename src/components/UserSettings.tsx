@@ -14,7 +14,7 @@ const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.R
 
 interface DinnerDays {
   [key: string]: {
-    status: 'always' | 'never' | 'default' | 'takeaway';
+    status: 'never' | 'always' | 'default' | 'takeaway';
     portions: string;
   };
 }
@@ -55,13 +55,13 @@ const UserSettings: React.FC = () => {
   const [joinDinners, setJoinDinners] = useState(false);
   const [defaultResponse, setDefaultResponse] = useState<'never' | 'always'>('never');
   const [dinnerDays, setDinnerDays] = useState<DinnerDays>({
-    Monday: { status: 'always', portions: portions },
-    Tuesday: { status: 'always', portions: portions },
-    Wednesday: { status: 'always', portions: portions },
-    Thursday: { status: 'always', portions: portions },
-    Friday: { status: 'always', portions: portions },
-    Saturday: { status: 'always', portions: portions },
-    Sunday: { status: 'always', portions: portions },
+    Monday: { status: 'never', portions: portions },
+    Tuesday: { status: 'never', portions: portions },
+    Wednesday: { status: 'never', portions: portions },
+    Thursday: { status: 'never', portions: portions },
+    Friday: { status: 'never', portions: portions },
+    Saturday: { status: 'never', portions: portions },
+    Sunday: { status: 'never', portions: portions },
   });
   const [showToast, setShowToast] = useState(false);
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({ suspendedWeekdays: [] });
