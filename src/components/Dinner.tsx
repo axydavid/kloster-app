@@ -52,6 +52,7 @@ const Dinner: React.FC = () => {
     id: string;
     portions: number;
     isTakeAway: boolean;
+    isAutomaticallySet?: boolean;
   }
 
   interface DinnerDay {
@@ -513,7 +514,7 @@ const Dinner: React.FC = () => {
           portions,
           isTakeAway,
           isAutomaticallySet: false
-        });
+        } as Attendant);
       }
 
       const { error: upsertError } = await supabase
