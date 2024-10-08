@@ -52,7 +52,7 @@ const Dinner: React.FC = () => {
     id: string;
     portions: number;
     isTakeAway: boolean;
-    isAutomaticallySet?: boolean;
+    isAutomaticallySet: boolean;
   }
 
   interface DinnerDay {
@@ -138,18 +138,20 @@ const Dinner: React.FC = () => {
   const fetchAdminSettings = async () => {
     const { data, error } = await supabase
       .from('admin_settings')
-      .select('budget_per_meal, currency_type, suspended_weekdays, dinner')
-      .single();
+      .select('budget_per_meal, currency_type, suspended_weekdays, dinner');
 
     if (error) {
       console.error('Error fetching admin settings:', error);
-    } else {
+    } else if (data && data.length > 0) {
+      const adminData = data[0];
       setAdminSettings({
-        budgetPerMeal: data.budget_per_meal,
-        currencyType: data.currency_type,
-        suspendedWeekdays: data.suspended_weekdays || [],
-        dinner: data.dinner || []
+        budgetPerMeal: adminData.budget_per_meal,
+        currencyType: adminData.currency_type,
+        suspendedWeekdays: adminData.suspended_weekdays || [],
+        dinner: adminData.dinner || []
       });
+    } else {
+      console.error('No admin settings found');
     }
   };
 
