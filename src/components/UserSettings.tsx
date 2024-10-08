@@ -411,8 +411,8 @@ const UserSettings: React.FC = () => {
                     <div>
                       <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Daily Response</Label>
                       <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
-                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
-                          const isSuspended = adminSettings.suspendedWeekdays.includes(day);
+                      {weekdays.map((day, index) => {
+                          const isSuspended = adminSettings.suspendedWeekdays.includes(index);
                           return (
                             <div key={day} className="flex flex-col items-center">
                               <Button
