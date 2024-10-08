@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import Toast from './Toast';
+import Toast, { ToastType } from './Toast';
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -62,7 +62,7 @@ const UserSettings: React.FC = () => {
     Saturday: { status: 'never', portions: '1' },
     Sunday: { status: 'never', portions: '1' },
   });
-  const [showToast, setShowToast] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({ suspendedWeekdays: [] });
   const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -137,7 +137,9 @@ const UserSettings: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('handleSubmit called'); // Add this line
+    console.log('handleSubmit called');
+
+    setToast({ message: 'Saving settings...', type: 'loading' });
 
     // Update dinnerDays statuses for suspended days
     const updatedDinnerDays = { ...dinnerDays };
@@ -156,20 +158,19 @@ const UserSettings: React.FC = () => {
       return acc;
     }, {} as { [key: string]: { status: string; portions: string } });
 
-    const { data, error } = await supabase.auth.updateUser({
-      data: {
-        display_name: displayName.trim(),
-        iconColor,
-        portions: portions.trim(),
-        joinDinners,
-        dinnerDays: formattedDinnerDays
-      }
-    });
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          display_name: displayName.trim(),
+          iconColor,
+          portions: portions.trim(),
+          joinDinners,
+          dinnerDays: formattedDinnerDays
+        }
+      });
 
-    if (error) {
-      console.error('Error updating user settings:', error);
-      return false;
-    } else {
+      if (error) throw error;
+
       // Update admin_settings table
       if (joinDinners) {
         const { data: { user } } = await supabase.auth.getUser();
@@ -179,25 +180,21 @@ const UserSettings: React.FC = () => {
             .select('dinner')
             .single();
 
-          if (adminError) {
-            console.error('Error fetching admin settings:', adminError);
-          } else {
-            const currentDinner = adminSettings.dinner || [];
-            if (!currentDinner.includes(user.id)) {
-              const { error: updateError } = await supabase
-                .from('admin_settings')
-                .update({ dinner: [...currentDinner, user.id] })
-                .eq('id', 1); // Assuming there's only one row in admin_settings
+          if (adminError) throw adminError;
 
-              if (updateError) {
-                console.error('Error updating admin settings:', updateError);
-              }
-            }
+          const currentDinner = adminSettings.dinner || [];
+          if (!currentDinner.includes(user.id)) {
+            const { error: updateError } = await supabase
+              .from('admin_settings')
+              .update({ dinner: [...currentDinner, user.id] })
+              .eq('id', 1);
+
+            if (updateError) throw updateError;
           }
-        }
 
-        // Update dinner_days for the next 28 days
-        await updateDinnerDaysForNextMonth(user?.id || '', formattedDinnerDays);
+          // Update dinner_days for the next 28 days
+          await updateDinnerDaysForNextMonth(user.id, formattedDinnerDays);
+        }
       } else {
         // Remove user from dinner array if they've opted out
         const { data: { user } } = await supabase.auth.getUser();
@@ -207,29 +204,30 @@ const UserSettings: React.FC = () => {
             .select('dinner')
             .single();
 
-          if (adminError) {
-            console.error('Error fetching admin settings:', adminError);
-          } else {
-            const currentDinner = adminSettings.dinner || [];
-            const updatedDinner = currentDinner.filter((id: string) => id !== user.id);
-            const { error: updateError } = await supabase
-              .from('admin_settings')
-              .update({ dinner: updatedDinner })
-              .eq('id', 1); // Assuming there's only one row in admin_settings
+          if (adminError) throw adminError;
 
-            if (updateError) {
-              console.error('Error updating admin settings:', updateError);
-            }
-          }
+          const currentDinner = adminSettings.dinner || [];
+          const updatedDinner = currentDinner.filter((id: string) => id !== user.id);
+          const { error: updateError } = await supabase
+            .from('admin_settings')
+            .update({ dinner: updatedDinner })
+            .eq('id', 1);
+
+          if (updateError) throw updateError;
 
           // Remove user from all future dinner_days
           await removeDinnerDaysForUser(user.id);
         }
       }
 
-      // Show toast message only after all operations are complete
-      setShowToast(true);
+      setToast({ message: 'Settings saved successfully!', type: 'success' });
+      setTimeout(() => setToast(null), 5000);
       return true;
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      setToast({ message: 'Error saving settings. Please try again.', type: 'error' });
+      setTimeout(() => setToast(null), 5000);
+      return false;
     }
   };
 
@@ -344,10 +342,11 @@ const UserSettings: React.FC = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {showToast && (
+          {toast && (
             <Toast
-              message="Settings saved successfully!"
-              onClose={() => setShowToast(false)}
+              message={toast.message}
+              type={toast.type}
+              onClose={() => setToast(null)}
             />
           )}
           <div className="flex flex-wrap -mx-2">
