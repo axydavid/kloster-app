@@ -67,6 +67,19 @@ const UserSettings: React.FC = () => {
   const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   useEffect(() => {
+    setDinnerDays(prevDays => {
+      const newDays = { ...prevDays };
+      weekdays.forEach((day, index) => {
+        const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
+        if (isSuspended) {
+          newDays[day].status = 'never';
+        }
+      });
+      return newDays;
+    });
+  }, [adminSettings, weekdays]);
+
+  useEffect(() => {
     const fetchSettings = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -124,7 +137,17 @@ const UserSettings: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formattedDinnerDays = Object.entries(dinnerDays).reduce((acc, [day, value]) => {
+
+    // Update dinnerDays statuses for suspended days
+    const updatedDinnerDays = { ...dinnerDays };
+    weekdays.forEach((day, index) => {
+      const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
+      if (isSuspended) {
+        updatedDinnerDays[day].status = 'never';
+      }
+    });
+
+    const formattedDinnerDays = Object.entries(updatedDinnerDays).reduce((acc, [day, value]) => {
       acc[day] = {
         status: value.status,
         portions: value.portions
