@@ -424,10 +424,12 @@ const UserSettings: React.FC = () => {
                                     : 'bg-gray-100 hover:bg-gray-200'
                                 }`}
                                 onClick={() => {
-                                  const currentValue = dinnerDays[day].status;
-                                  const newValue =
-                                    currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
-                                  handleDinnerDayChange(day, newValue, isSuspended);
+                                  if (!isSuspended) {
+                                    const currentValue = dinnerDays[day].status;
+                                    const newValue =
+                                      currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
+                                    handleDinnerDayChange(day, newValue, isSuspended);
+                                  }
                                 }}
                                 disabled={isSuspended}
                               >
