@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import Toast from './Toast';
@@ -270,25 +270,28 @@ const UserSettings: React.FC = () => {
     }
   };
 
-  const handleDinnerDayChange = (day: string, status: 'always' | 'never' | 'default' | 'takeaway') => {
+  const handleDinnerDayChange = useCallback((day: string, status: 'always' | 'never' | 'default' | 'takeaway') => {
     setDinnerDays(prev => {
       const newDays = { ...prev };
       newDays[day] = { ...newDays[day], status };
       return newDays;
     });
-    // Automatically save the changes without showing the toast
-    handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>);
-  };
+  }, []);
 
-  const handlePortionChange = (day: string, portions: string) => {
+  const handlePortionChange = useCallback((day: string, portions: string) => {
     setDinnerDays(prev => {
       const newDays = { ...prev };
       newDays[day] = { ...newDays[day], portions };
       return newDays;
     });
-    // Automatically save the changes without showing the toast
-    handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>, day, portions);
-  };
+  }, []);
+
+  useEffect(() => {
+    const saveChanges = async () => {
+      await handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>);
+    };
+    saveChanges();
+  }, [dinnerDays]);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
