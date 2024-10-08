@@ -19,6 +19,10 @@ interface DinnerDays {
   };
 }
 
+interface AdminSettings {
+  suspendedWeekdays: string[];
+}
+
 const presetColors = [
   { hex: '#1E40AF', name: 'Royal Blue' },
   { hex: '#047857', name: 'Forest Green' },
@@ -56,9 +60,10 @@ const UserSettings: React.FC = () => {
     Sunday: { status: 'always', portions: portions },
   });
   const [showToast, setShowToast] = useState(false);
+  const [adminSettings, setAdminSettings] = useState<AdminSettings>({ suspendedWeekdays: [] });
 
   useEffect(() => {
-    const fetchUserSettings = async () => {
+    const fetchSettings = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setDisplayName(user.user_metadata.display_name || user.email || '');
@@ -76,8 +81,20 @@ const UserSettings: React.FC = () => {
           Sunday: { status: 'never', portions: '2' },
         });
       }
+
+      // Fetch admin settings
+      const { data: adminData, error: adminError } = await supabase
+        .from('admin_settings')
+        .select('suspendedWeekdays')
+        .single();
+
+      if (adminError) {
+        console.error('Error fetching admin settings:', adminError);
+      } else {
+        setAdminSettings(adminData);
+      }
     };
-    fetchUserSettings();
+    fetchSettings();
   }, []);
 
   const handleDefaultResponseChange = (value: 'always' | 'never') => {
@@ -389,51 +406,68 @@ const UserSettings: React.FC = () => {
                     <div>
                       <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Daily Response</Label>
                       <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
-                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                          <div key={day} className="flex flex-col items-center">
-                            <Button
-                              variant="outline"
-                              className={`flex flex-col items-center justify-center h-24 p-2  w-full ${dinnerDays[day].status === 'always'
-                                  ? 'bg-green-100 hover:bg-green-200'
-                                  : dinnerDays[day].status === 'never'
+                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
+                          const isSuspended = adminSettings.suspendedWeekdays.includes(day);
+                          return (
+                            <div key={day} className="flex flex-col items-center">
+                              <Button
+                                variant="outline"
+                                className={`flex flex-col items-center justify-center h-24 p-2 w-full ${
+                                  isSuspended
+                                    ? 'bg-gray-300 cursor-not-allowed'
+                                    : dinnerDays[day].status === 'always'
+                                    ? 'bg-green-100 hover:bg-green-200'
+                                    : dinnerDays[day].status === 'never'
                                     ? 'bg-red-100 hover:bg-red-200'
+                                    : dinnerDays[day].status === 'takeaway'
+                                    ? 'bg-yellow-100 hover:bg-yellow-200'
                                     : 'bg-gray-100 hover:bg-gray-200'
                                 }`}
-                              onClick={() => {
-                                const currentValue = dinnerDays[day].status;
-                                const newValue =
-                                  currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
-                                handleDinnerDayChange(day, newValue);
-                              }}
-                            >
-                              <span className="text-sm font-medium">{day.slice(0, 3)}</span>
-                              <span className="text-xs text-muted-foreground mt-1">
-                                {dinnerDays[day].status === 'always' ? 'Always' : dinnerDays[day].status === 'takeaway' ? 'Take Away' : 'Never'}
-                              </span>
-                              {dinnerDays[day].status !== 'never' && (
-                                <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
-                                  <Utensils className="text-gray-500 w-4 h-4 mr-1 shrink-0" />
-                                  <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    pattern="[0-9]*\.?[0-9]*"
-                                    value={dinnerDays[day].portions}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      const value = e.target.value.replace(/[^0-9.]/g, '');
-                                      handlePortionChange(day, value);
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      (e.target as HTMLInputElement).select();
-                                    }}
-                                    className="w-full p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-gray-500"
-                                  />
-                                </div>
-                              )}
-                            </Button>
-                          </div>
-                        ))}
+                                onClick={() => {
+                                  if (!isSuspended) {
+                                    const currentValue = dinnerDays[day].status;
+                                    const newValue =
+                                      currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
+                                    handleDinnerDayChange(day, newValue);
+                                  }
+                                }}
+                                disabled={isSuspended}
+                              >
+                                <span className="text-sm font-medium">{day.slice(0, 3)}</span>
+                                <span className="text-xs text-muted-foreground mt-1">
+                                  {isSuspended
+                                    ? 'Suspended'
+                                    : dinnerDays[day].status === 'always'
+                                    ? 'Always'
+                                    : dinnerDays[day].status === 'takeaway'
+                                    ? 'Take Away'
+                                    : 'Never'}
+                                </span>
+                                {!isSuspended && dinnerDays[day].status !== 'never' && (
+                                  <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
+                                    <Utensils className="text-gray-500 w-4 h-4 mr-1 shrink-0" />
+                                    <input
+                                      type="text"
+                                      inputMode="decimal"
+                                      pattern="[0-9]*\.?[0-9]*"
+                                      value={dinnerDays[day].portions}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        const value = e.target.value.replace(/[^0-9.]/g, '');
+                                        handlePortionChange(day, value);
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        (e.target as HTMLInputElement).select();
+                                      }}
+                                      className="w-full p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-gray-500"
+                                    />
+                                  </div>
+                                )}
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
