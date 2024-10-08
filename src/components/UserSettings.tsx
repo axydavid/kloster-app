@@ -63,6 +63,7 @@ const UserSettings: React.FC = () => {
     Sunday: { status: 'never', portions: '1' },
   });
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({ suspendedWeekdays: [] });
   const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -139,6 +140,7 @@ const UserSettings: React.FC = () => {
     e.preventDefault();
     console.log('handleSubmit called');
 
+    setIsSubmitting(true);
     setToast({ message: 'Saving settings...', type: 'loading' });
 
     // Update dinnerDays statuses for suspended days
@@ -228,6 +230,8 @@ const UserSettings: React.FC = () => {
       setToast({ message: 'Error saving settings. Please try again.', type: 'error' });
       setTimeout(() => setToast(null), 5000);
       return false;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -504,7 +508,9 @@ const UserSettings: React.FC = () => {
 
 
 
-          <Button type="submit" className="w-full">Save Settings</Button>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save Settings'}
+          </Button>
         </form>
       </CardContent>
     </Card>
