@@ -58,37 +58,27 @@ const UserSettings: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
+    const fetchUserSettings = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setDisplayName(user.user_metadata.display_name || user.email || '');
+        setIconColor(user.user_metadata.iconColor || '#007bff');
+        setPortions(user.user_metadata.portions || '2');
+        setJoinDinners(user.user_metadata.joinDinners || false);
+        setDefaultResponse(user.user_metadata.defaultResponse || 'never');
+        setDinnerDays(user.user_metadata.dinnerDays || {
+          Monday: { status: 'never', portions: '2' },
+          Tuesday: { status: 'never', portions: '2' },
+          Wednesday: { status: 'never', portions: '2' },
+          Thursday: { status: 'never', portions: '2' },
+          Friday: { status: 'never', portions: '2' },
+          Saturday: { status: 'never', portions: '2' },
+          Sunday: { status: 'never', portions: '2' },
+        });
+      }
+    };
     fetchUserSettings();
   }, []);
-
-  const fetchUserSettings = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      setDisplayName(user.user_metadata.display_name || user.email || '');
-      setIconColor(user.user_metadata.iconColor || '#007bff');
-      setPortions(user.user_metadata.portions || '2');
-      setJoinDinners(user.user_metadata.joinDinners || false);
-      setDefaultResponse(user.user_metadata.defaultResponse || 'never');
-      const defaultDinnerDays = {
-        Monday: { status: 'never', portions: portions },
-        Tuesday: { status: 'never', portions: portions },
-        Wednesday: { status: 'never', portions: portions },
-        Thursday: { status: 'never', portions: portions },
-        Friday: { status: 'never', portions: portions },
-        Saturday: { status: 'never', portions: portions },
-        Sunday: { status: 'never', portions: portions },
-      };
-      const userDinnerDays = user.user_metadata.dinnerDays || {};
-      const formattedDinnerDays = Object.entries(defaultDinnerDays).reduce((acc, [day, defaultValue]) => {
-        acc[day] = {
-          status: userDinnerDays[day]?.status || defaultValue.status,
-          portions: userDinnerDays[day]?.portions || defaultValue.portions
-        };
-        return acc;
-      }, {} as DinnerDays);
-      setDinnerDays(formattedDinnerDays);
-    }
-  };
 
   const handleDefaultResponseChange = (value: 'always' | 'never') => {
     setDefaultResponse(value);
