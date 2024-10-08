@@ -12,9 +12,13 @@ const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.R
 export interface UserData {
   id: string;
   type?: string;
-  raw_user_meta_data?: {
+  raw_user_meta_data: {
     display_name?: string;
     iconColor?: string;
+    portions?: number;
+    default_days?: {
+      [key: number]: 'always' | 'never' | 'default' | 'takeaway';
+    };
     [key: string]: any;
   };
 }
@@ -34,16 +38,19 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
 
   useEffect(() => {
     const fetchAllUsers = async () => {
+      // IMPORTANT: This uses a custom RPC function to fetch users. Do not change to use a "users" table.
       const { data, error } = await supabase.rpc('get_all_users');
       if (error) {
         console.error('Error fetching all users:', error);
       } else {
-        setUsers(data || []);
+        setUsers(data);
       }
     };
 
     fetchAllUsers();
   }, []);
+
+  // Note: Do not change this to use a "users" table. We're using Supabase Auth for user data.
 
   const isActive = (path: string) => {
     return location.pathname === path ? "bg-primary-foreground text-primary" : "";
