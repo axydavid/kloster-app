@@ -200,21 +200,21 @@ const UserSettings: React.FC = () => {
       const dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'long' });
       const daySettings = dinnerDays[dayOfWeek];
 
+      const { data, error } = await supabase
+        .from('dinner_days')
+        .select('attendants')
+        .eq('date', d.toISOString().split('T')[0])
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching dinner day:', error);
+        continue;
+      }
+
+      let attendants = data?.attendants || [];
+      const existingAttendantIndex = attendants.findIndex((a: { id: string }) => a.id === userId);
+
       if (daySettings.status === 'always' || daySettings.status === 'takeaway') {
-        const { data, error } = await supabase
-          .from('dinner_days')
-          .select('attendants')
-          .eq('date', d.toISOString().split('T')[0])
-          .single();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching dinner day:', error);
-          continue;
-        }
-
-        let attendants = data?.attendants || [];
-        const existingAttendantIndex = attendants.findIndex((a: { id: string }) => a.id === userId);
-
         if (existingAttendantIndex !== -1) {
           attendants[existingAttendantIndex] = {
             ...attendants[existingAttendantIndex],
@@ -230,14 +230,17 @@ const UserSettings: React.FC = () => {
             isAutomaticallySet: true
           });
         }
+      } else if (existingAttendantIndex !== -1 && attendants[existingAttendantIndex].isAutomaticallySet) {
+        // Remove the user if they were automatically set but the new setting is 'never'
+        attendants.splice(existingAttendantIndex, 1);
+      }
 
-        const { error: upsertError } = await supabase
-          .from('dinner_days')
-          .upsert({ date: d.toISOString().split('T')[0], attendants });
+      const { error: upsertError } = await supabase
+        .from('dinner_days')
+        .upsert({ date: d.toISOString().split('T')[0], attendants });
 
-        if (upsertError) {
-          console.error('Error updating dinner day:', upsertError);
-        }
+      if (upsertError) {
+        console.error('Error updating dinner day:', upsertError);
       }
     }
   };

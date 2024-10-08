@@ -475,27 +475,19 @@ const Dinner: React.FC = () => {
 
       const currentUserId = user.id;
 
-      // First, try to fetch the existing day
+      // Fetch the existing day
       const { data: existingDay, error: fetchError } = await supabase
         .from('dinner_days')
         .select('attendants, cooks, ingredients')
         .eq('date', date)
         .single();
 
-      let attendants: Attendant[] = [];
-      let cooks: string[] = [];
-      let ingredients: string[] = [];
+      let attendants: Attendant[] = existingDay?.attendants || [];
+      let cooks: string[] = existingDay?.cooks || [];
+      let ingredients: string[] = existingDay?.ingredients || [];
 
-      if (fetchError && fetchError.code === 'PGRST116') {
-        // Day doesn't exist, we'll create a new one
-        console.log('Creating new dinner day');
-      } else if (fetchError) {
+      if (fetchError && fetchError.code !== 'PGRST116') {
         throw fetchError;
-      } else {
-        // Day exists, use its data
-        attendants = existingDay.attendants || [];
-        cooks = existingDay.cooks || [];
-        ingredients = existingDay.ingredients || [];
       }
 
       const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(date).getDay());
@@ -519,7 +511,8 @@ const Dinner: React.FC = () => {
         attendants.push({
           id: currentUserId,
           portions,
-          isTakeAway
+          isTakeAway,
+          isAutomaticallySet: false
         });
       }
 

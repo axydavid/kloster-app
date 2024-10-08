@@ -19,27 +19,28 @@ const updateDinnerDaysJob = async () => {
   const today = new Date();
   const futureDate = new Date(today.getTime() + 28 * 24 * 60 * 60 * 1000);
 
+  const { data: existingDay, error: fetchError } = await supabase
+    .from('dinner_days')
+    .select('attendants')
+    .eq('date', futureDate.toISOString().split('T')[0])
+    .single();
+
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    console.error('Error fetching future dinner day:', fetchError);
+    return;
+  }
+
+  let attendants = existingDay?.attendants || [];
+
   for (const user of users) {
     if (user.raw_user_meta_data.joinDinners) {
       const dinnerDays = user.raw_user_meta_data.dinnerDays || {};
       const dayOfWeek = futureDate.toLocaleDateString('en-US', { weekday: 'long' });
       const daySettings = dinnerDays[dayOfWeek];
 
+      const existingAttendantIndex = attendants.findIndex((a: any) => a.id === user.id);
+
       if (daySettings && (daySettings.status === 'always' || daySettings.status === 'takeaway')) {
-        const { data, error } = await supabase
-          .from('dinner_days')
-          .select('attendants')
-          .eq('date', futureDate.toISOString().split('T')[0])
-          .single();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching dinner day:', error);
-          continue;
-        }
-
-        let attendants = data?.attendants || [];
-        const existingAttendantIndex = attendants.findIndex((a: any) => a.id === user.id);
-
         if (existingAttendantIndex !== -1) {
           attendants[existingAttendantIndex] = {
             ...attendants[existingAttendantIndex],
@@ -55,16 +56,19 @@ const updateDinnerDaysJob = async () => {
             isAutomaticallySet: true
           });
         }
-
-        const { error: upsertError } = await supabase
-          .from('dinner_days')
-          .upsert({ date: futureDate.toISOString().split('T')[0], attendants });
-
-        if (upsertError) {
-          console.error('Error updating dinner day:', upsertError);
-        }
+      } else if (existingAttendantIndex !== -1 && attendants[existingAttendantIndex].isAutomaticallySet) {
+        // Remove the user if they were automatically set but the new setting is 'never'
+        attendants.splice(existingAttendantIndex, 1);
       }
     }
+  }
+
+  const { error: upsertError } = await supabase
+    .from('dinner_days')
+    .upsert({ date: futureDate.toISOString().split('T')[0], attendants });
+
+  if (upsertError) {
+    console.error('Error updating future dinner day:', upsertError);
   }
 };
 
