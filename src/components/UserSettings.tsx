@@ -98,7 +98,7 @@ const UserSettings: React.FC = () => {
           Saturday: { status: 'never', portions: '1' },
           Sunday: { status: 'never', portions: '1' },
         };
-        
+
         setDinnerDays(Object.keys(defaultDinnerDays).reduce((acc, day) => {
           acc[day] = {
             status: userDinnerDays[day]?.status || 'never',
@@ -410,18 +410,20 @@ const UserSettings: React.FC = () => {
             <div className="flex flex-col md:flex-row gap-4">
               <div
                 className="bg-secondary p-4 rounded-lg shadow-sm cursor-pointer select-none flex-1"
-              // onClick={(e) => {
-              //   e.preventDefault();
-              //   setJoinDinners(!joinDinners);
-              // }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setJoinDinners(!joinDinners);
+                }}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="joinDinners" className="text-lg font-semibold cursor-pointer" onClick={(e) => e.stopPropagation()}>Join Dinners</Label>
+                  <Label htmlFor="joinDinners" className="text-lg font-semibold cursor-pointer"
+                    onMouseDown={(e) => e.preventDefault()}>Join Dinners</Label>
                   <Checkbox
                     id="joinDinners"
                     checked={joinDinners}
                     onCheckedChange={(checked) => handleJoinDinnersChange(checked as boolean)}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => e.preventDefault()}
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">Enable to join community dinners</p>
@@ -430,25 +432,29 @@ const UserSettings: React.FC = () => {
                     <div>
                       <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Auto Response</Label>
                       <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
-                      {weekdays.map((day, index) => {
+                        {weekdays.map((day, index) => {
                           const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
                           return (
-                            <div key={day} className="flex flex-col items-center">
+                            <div key={day} className="flex flex-col items-center"
+                            onMouseDown={(e)=>{
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            >
                               <Button
                                 type="button"
                                 variant="outline"
-                                className={`flex flex-col items-center justify-center h-24 p-2 w-full ${
-                                  isSuspended
-                                    ? 'bg-gray-300 cursor-not-allowed'
-                                    : dinnerDays[day].status === 'always'
+                                className={`flex flex-col items-center justify-center h-24 p-2 w-full ${isSuspended
+                                  ? 'bg-gray-300 cursor-not-allowed'
+                                  : dinnerDays[day].status === 'always'
                                     ? 'bg-green-100 hover:bg-green-200'
                                     : dinnerDays[day].status === 'never'
-                                    ? 'bg-red-100 hover:bg-red-200'
-                                    : dinnerDays[day].status === 'takeaway'
-                                    ? 'bg-yellow-100 hover:bg-yellow-200'
-                                    : 'bg-gray-100 hover:bg-gray-200'
-                                }`}
-                                onClick={() => {
+                                      ? 'bg-red-100 hover:bg-red-200'
+                                      : dinnerDays[day].status === 'takeaway'
+                                        ? 'bg-yellow-100 hover:bg-yellow-200'
+                                        : 'bg-gray-100 hover:bg-gray-200'
+                                  }`}
+                                onMouseDown={() => {
                                   if (!isSuspended) {
                                     const currentValue = dinnerDays[day].status;
                                     const newValue =
@@ -463,10 +469,10 @@ const UserSettings: React.FC = () => {
                                   {isSuspended
                                     ? 'Suspended'
                                     : dinnerDays[day].status === 'always'
-                                    ? 'Always'
-                                    : dinnerDays[day].status === 'takeaway'
-                                    ? 'Take Away'
-                                    : 'Never'}
+                                      ? 'Always'
+                                      : dinnerDays[day].status === 'takeaway'
+                                        ? 'Take Away'
+                                        : 'Never'}
                                 </span>
                                 {!isSuspended && dinnerDays[day].status !== 'never' && (
                                   <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
