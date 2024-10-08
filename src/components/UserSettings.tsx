@@ -23,6 +23,10 @@ interface AdminSettings {
   suspendedWeekdays: string[];
 }
 
+interface AdminSettingsDB {
+  suspended_weekdays: string[];
+}
+
 const presetColors = [
   { hex: '#1E40AF', name: 'Royal Blue' },
   { hex: '#047857', name: 'Forest Green' },
@@ -85,13 +89,13 @@ const UserSettings: React.FC = () => {
       // Fetch admin settings
       const { data: adminData, error: adminError } = await supabase
         .from('admin_settings')
-        .select('suspendedWeekdays')
+        .select('suspended_weekdays')
         .single();
 
       if (adminError) {
         console.error('Error fetching admin settings:', adminError);
       } else {
-        setAdminSettings(adminData);
+        setAdminSettings({ suspendedWeekdays: (adminData as AdminSettingsDB).suspended_weekdays });
       }
     };
     fetchSettings();
