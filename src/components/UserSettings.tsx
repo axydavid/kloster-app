@@ -404,7 +404,7 @@ const UserSettings: React.FC = () => {
                 {joinDinners && (
                   <div className="mt-4">
                     <div>
-                      <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Daily Response</Label>
+                      <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Auto Response</Label>
                       <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
                       {weekdays.map((day, index) => {
                           const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
