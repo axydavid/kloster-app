@@ -438,13 +438,16 @@ const Dashboard: React.FC = () => {
                       // Find the user in the users context
                       const user = users?.find(u => u.id === attendant.id);
                       const isGuest = attendant.id.startsWith('guest-');
+                      const userColor = user?.raw_user_meta_data?.iconColor || '#4F46E5';
                       
                       return (
                         <div 
                           key={attendant.id} 
-                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${
-                            isGuest ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
-                          } ${attendant.isTakeAway ? 'border-2 border-dashed border-gray-400' : ''}`}
+                          style={{ 
+                            backgroundColor: isGuest ? '#F59E0B' : userColor,
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm font-bold text-white flex items-center
+                          ${attendant.isTakeAway ? 'border-2 border-dashed border-white' : ''}`}
                         >
                           {isGuest ? (
                             <>
