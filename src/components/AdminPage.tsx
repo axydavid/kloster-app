@@ -194,7 +194,7 @@ const AdminPage: React.FC = () => {
                 <h3 className="text-lg font-semibold mb-2">Lunch Schedule</h3>
                 <Label>Suspended Weekdays for Lunch</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
                     <Button
                       key={day}
                       variant="outline"
