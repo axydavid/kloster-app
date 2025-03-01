@@ -74,7 +74,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
         </div>
 
         <div className="mb-6">
-          <div className="flex items-center mb-2">
+          <div className="flex justify-center mb-4">
             <div className="relative">
               <Utensils className="text-gray-500 absolute left-2 top-1/2 transform -translate-y-1/2" />
               <Input
@@ -109,17 +109,20 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
           </div>
 
           <div className="border-t pt-4 mt-4">
-            <div className="flex items-center mb-3">
-              <Input
-                type="number"
-                value={guestCount}
-                onChange={(e) => setGuestCount(parseInt(e.target.value) || 0)}
-                min={0}
-                max={20}
-                className="w-20 text-center bg-gray-100 text-gray-700"
-                onFocus={(e) => e.target.select()}
-                style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
-              />
+            <div className="flex justify-center mb-3">
+              <div className="relative">
+                <UserPlus className="text-gray-500 absolute left-2 top-1/2 transform -translate-y-1/2" />
+                <Input
+                  type="number"
+                  value={guestCount}
+                  onChange={(e) => setGuestCount(parseInt(e.target.value) || 0)}
+                  min={0}
+                  max={20}
+                  className="w-20 pl-8 pr-2 text-center bg-gray-100 text-gray-700"
+                  onFocus={(e) => e.target.select()}
+                  style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
+                />
+              </div>
             </div>
             <Button 
               onClick={() => {
