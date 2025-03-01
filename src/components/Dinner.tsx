@@ -611,337 +611,337 @@ const Dinner: React.FC = () => {
     <>
       <Card className="overflow-x-auto">
         <CardHeader className="card-header">
-        <div className="flex justify-between items-center">
-          <CardTitle>Dinner</CardTitle>
-          <div className="flex items-center space-x-2">
-            <Button onClick={() => changeWeek(-1)}>&lt;</Button>
-            <div className="text-lg font-semibold">
-              {startDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })} - {
-                new Date(startDate.getTime() + 27 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
-              }
+          <div className="flex justify-between items-center">
+            <CardTitle>Dinner</CardTitle>
+            <div className="flex items-center space-x-2">
+              <Button onClick={() => changeWeek(-1)}>&lt;</Button>
+              <div className="text-lg font-semibold">
+                {startDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })} - {
+                  new Date(startDate.getTime() + 27 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
+                }
+              </div>
+              <Button onClick={() => changeWeek(1)}>&gt;</Button>
             </div>
-            <Button onClick={() => changeWeek(1)}>&gt;</Button>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0 card-content">
-        <div className="flex flex-col">
-          <div ref={tableHeaderRef} className="flex bg-gray-100 font-bold border-t border-gray-300" style={fixedHeaderStyle}>
-            <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-b border-r border-gray-300">Day</div>
-            <div className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-b border-r border-gray-300">Chef</div>
-            <div className="flex-1 p-2 border-b border-r border-gray-300">Ingredients</div>
-            <div className="flex-1 p-2 border-b border-gray-300">Attendants</div>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            {dinnerDays.map((day, index) => (
-              <div
-                key={`${day.date}-${index}`}
-                id={`day-${day.date}`}
-                style={{
-                  backgroundColor: isDaySuspended(new Date(day.date))
-                    ? 'rgba(229, 231, 235, 0.7)' // Lighter gray with transparency
-                    : 'transparent',
-                  minHeight: day.attendants.filter(a => !a.id.startsWith('guest-')).length > 
-                    Math.ceil(day.attendants.filter(a => !a.id.startsWith('guest-')).length / 2) ? '100px' : '80px'
-                }}
-                className={`flex border-b border-gray-300 ${new Date(day.date).toDateString() === new Date().toDateString()
-                  ? 'current-day-overlay'
-                  : ''
-                  }`}
-              >
-                <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-r border-gray-300 flex flex-col justify-center">
-                  <div className="text-lg">{new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                  <div className="text-sm text-gray-500">
-                    {new Date(day.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
-                  </div>
-                </div>
+        </CardHeader>
+        <CardContent className="p-0 card-content">
+          <div className="flex flex-col">
+            <div ref={tableHeaderRef} className="flex bg-gray-100 font-bold border-t border-gray-300" style={fixedHeaderStyle}>
+              <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-b border-r border-gray-300">Day</div>
+              <div className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-b border-r border-gray-300">Chef</div>
+              <div className="flex-1 p-2 border-b border-r border-gray-300">Ingredients</div>
+              <div className="flex-1 p-2 border-b border-gray-300">Attendants</div>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {dinnerDays.map((day, index) => (
                 <div
-                  className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-r border-gray-300 cursor-pointer"
-                  onClick={(e) => {
-                    // Only trigger if not clicking on a button within UserTag
-                    const target = e.target as HTMLElement;
-                    if (target.tagName !== 'BUTTON' && !target.closest('button')) {
-                      toggleCook(day.date);
-                    }
+                  key={`${day.date}-${index}`}
+                  id={`day-${day.date}`}
+                  style={{
+                    backgroundColor: isDaySuspended(new Date(day.date))
+                      ? 'rgba(229, 231, 235, 0.7)' // Lighter gray with transparency
+                      : 'transparent',
+                    minHeight: day.attendants.filter(a => !a.id.startsWith('guest-')).length >
+                      Math.ceil(day.attendants.filter(a => !a.id.startsWith('guest-')).length / 2) ? '100px' : '80px'
                   }}
+                  className={`flex border-b border-gray-300 ${new Date(day.date).toDateString() === new Date().toDateString()
+                    ? 'current-day-overlay'
+                    : ''
+                    }`}
                 >
-                  {day.cooks && day.cooks.length > 0 ? (
-                    <div className="flex flex-wrap items-center gap-1 w-full">
-                      {day.cooks.map((cookId) => (
-                        <UserTag
-                          key={cookId}
-                          user={users.find(user => user.id === cookId) || { id: cookId, raw_user_meta_data: {} }}
-                          portions={1} // Default value
-                          isTakeAway={false} // Default value
-                          showRemoveButton={cookId === currentUserId}
-                          onRemove={() => toggleCook(day.date)}
-                        />
-                      ))}
+                  <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-r border-gray-300 flex flex-col justify-center">
+                    <div className="text-lg">{new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                    <div className="text-sm text-gray-500">
+                      {new Date(day.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
                     </div>
-                  ) : (
-                    <span className="text-base text-gray-400 w-full h-full flex items-center justify-center">Cook</span>
-                  )}
-                </div>
-                <div className="flex-1 p-2 border-r border-gray-300 relative group">
-                  <Popover onOpenChange={handlePopoverOpenChange}>
-                    <PopoverTrigger asChild>
-                      <div className="cursor-pointer h-full w-full flex items-center" onClick={(e) => {
-                        e.stopPropagation();
-                        updateIngredients(day.date);
-                      }}>
-                        <div className="flex flex-wrap items-center gap-1 md:gap-2">
-                          {(day.ingredients || []).length > 0 ? (
-                            (day.ingredients || []).map((ingredient, index) => (
-                              <span key={index} className="inline-flex items-center">
-                                {React.cloneElement(ingredientIcons[ingredient] || <span>{ingredient}</span>, {
-                                  className: 'w-7 h-auto md:w-12 md:h-auto'
-                                })}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-base text-gray-400">None</span>
-                          )}
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full w-8 h-8 p-0 bg-green-500 hover:bg-green-600 text-white"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                          </svg>
-                        </Button>
-                      </div>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-[100vw] md:w-96 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0"
-                      onOpenAutoFocus={(e) => e.preventDefault()}
-                    >
-                      <div className="relative z-50 bg-white rounded-lg">
-                        <div className="flex justify-between items-center mb-4">
-                          <h4 className="font-bold leading-none">Ingredients</h4>
-                          <button
-                            onClick={closePopover}
-                            className="text-gray-500 hover:text-gray-700 font-bold text-xl"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          {[
-                            ['Beef', 'Pork', 'Chicken', 'Fish', 'Minced Meat'],
-                            ['Rice', 'Potatoes', 'Pasta', 'Bread'],
-                            ['Salad', 'Cheese']
-                          ].map((column, columnIndex) => (
-                            <div key={columnIndex} className="space-y-2">
-                              {column.map((ingredientName) => (
-                                <div
-                                  key={ingredientName}
-                                  className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-colors duration-200 ${day.ingredients.includes(ingredientName)
-                                    ? 'bg-blue-100 hover:bg-blue-200'
-                                    : 'hover:bg-gray-100'
-                                    }`}
-                                  onClick={() => {
-                                    updateIngredients(day.date, ingredientName, !day.ingredients.includes(ingredientName));
-                                  }}
-                                >
-                                  <span className="w-10 h-10 flex items-center justify-center">
-                                    {ingredientIcons[ingredientName]}
-                                  </span>
-                                  <span>{ingredientName}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div
-                  className="flex-1 p-2 relative cursor-pointer"
-                  onMouseDown={(e) => {
-                    if (isIngredientsPopupOpen) {
-                      return;
-                    }
-                    const startTime = new Date().getTime();
-                    const startX = e.clientX;
-                    const startY = e.clientY;
-                    const timer = setTimeout(() => {
-                      handleLongPress(day);
-                      setLongPressedDay(day);
-                      setIsLongPressModalOpen(true);
-                    }, 500);
-                    const clearTimer = () => {
-                      clearTimeout(timer);
-                      document.removeEventListener('mouseup', handleMouseUp);
-                      document.removeEventListener('mousemove', handleMouseMove);
-                    };
-                    const handleMouseUp = () => {
-                      clearTimer();
-                      const endTime = new Date().getTime();
-                      if (endTime - startTime < 500) {
-                        const currentAttendant = day.attendants.find(a => a.id === currentUserId);
-                        toggleAttendance(day.date, currentAttendant?.isTakeAway || false, userPortions);
+                  </div>
+                  <div
+                    className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-r border-gray-300 cursor-pointer"
+                    onClick={(e) => {
+                      // Only trigger if not clicking on a button within UserTag
+                      const target = e.target as HTMLElement;
+                      if (target.tagName !== 'BUTTON' && !target.closest('button')) {
+                        toggleCook(day.date);
                       }
-                    };
-                    const handleMouseMove = (moveEvent: MouseEvent) => {
-                      const moveThreshold = 10; // pixels
-                      const deltaX = Math.abs(moveEvent.clientX - startX);
-                      const deltaY = Math.abs(moveEvent.clientY - startY);
-                      if (deltaX > moveThreshold || deltaY > moveThreshold) {
-                        clearTimer();
-                      }
-                    };
-                    document.addEventListener('mouseup', handleMouseUp);
-                    document.addEventListener('mousemove', handleMouseMove);
-                    e.currentTarget.addEventListener('mouseleave', clearTimer, { once: true });
-                  }}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    if (!isIngredientsPopupOpen) {
-                      handleLongPress(day);
-                      setLongPressedDay(day);
-                      setIsLongPressModalOpen(true);
-                    }
-                  }}
-                  onTouchStart={(e) => {
-                    const timer = setTimeout(() => {
-                      handleLongPress(day);
-                      setLongPressedDay(day);
-                      setIsLongPressModalOpen(true);
-                    }, 500);
-                    const clearTimer = () => clearTimeout(timer);
-                    e.currentTarget.addEventListener('touchend', clearTimer, { once: true });
-                    e.currentTarget.addEventListener('touchmove', clearTimer, { once: true });
-                  }}
-                >
-                  <div className="w-full h-full flex items-center justify-between">
-                    {day.attendants.length > 0 ? (
-                      <div className="flex items-center w-full h-full pr-10">
-                        <span className="mr-2 px-2 py-1 text-sm font-bold bg-gray-100 rounded">
-                          {day.attendants.reduce((total, attendant) => {
-                            if (attendant.id.startsWith('guest-')) {
-                              return total + 1; // Count guests as 1 portion each
-                            }
-                            return total + (Number(attendant.portions) || 0);
-                          }, 0)}
-                        </span>
-                        <div className="flex flex-wrap items-center gap-1 overflow-y-auto overflow-x-hidden flex-grow">
-                          {day.attendants
-                            .filter(attendant => !attendant.id.startsWith('guest-'))
-                            .map((attendant) => (
-                              <UserTag
-                                key={attendant.id}
-                                user={users.find(user => user.id === attendant.id) || { id: attendant.id, raw_user_meta_ {} }}
-                                portions={attendant.portions}
-                                isTakeAway={attendant.isTakeAway}
-                                showRemoveButton={attendant.id === currentUserId}
-                                onRemove={() => toggleAttendance(day.date, attendant.isTakeAway)}
-                              />
-                            ))}
-                        </div>
+                    }}
+                  >
+                    {day.cooks && day.cooks.length > 0 ? (
+                      <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
+                        {day.cooks.map((cookId) => (
+                          <UserTag
+                            key={cookId}
+                            user={users.find(user => user.id === cookId) || { id: cookId, raw_user_meta_data: {} }}
+                            portions={1} // Default value
+                            isTakeAway={false} // Default value
+                            showRemoveButton={cookId === currentUserId}
+                            onRemove={() => toggleCook(day.date)}
+                          />
+                        ))}
                       </div>
                     ) : (
-                      <span className="text-base text-gray-400 w-full h-full flex items-center">None</span>
+                      <span className="text-base text-gray-400 w-full h-full flex items-center justify-center">Cook</span>
                     )}
-                    <Popover>
+                  </div>
+                  <div className="flex-1 p-2 border-r border-gray-300 relative group">
+                    <Popover onOpenChange={handlePopoverOpenChange}>
                       <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="rounded-full w-8 h-8 md:w-12 md:h-12 p-0 ml-1 flex-shrink-0 flex items-center justify-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const guestCount = day.attendants.filter(a => a.id.startsWith('guest-')).length;
-                            setGuestCount(guestCount);
-                          }}
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
-                          }}
-                          onTouchStart={(e) => {
-                            e.stopPropagation();
-                          }}
-                          onPointerDown={(e) => {
-                            e.stopPropagation();
-                          }}
-                        >
-                          {day.attendants.some(a => a.id.startsWith('guest-')) ? (
-                            <span className="text-gray-500 font-bold text-sm md:text-lg flex items-center justify-center w-full h-full">
-                              {day.attendants.filter(a => a.id.startsWith('guest-')).length}G
-                            </span>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 md:w-6 md:h-6">
+                        <div className="cursor-pointer h-full w-full flex items-center" onClick={(e) => {
+                          e.stopPropagation();
+                          updateIngredients(day.date);
+                        }}>
+                          <div className="flex flex-wrap items-center gap-1 md:gap-2">
+                            {(day.ingredients || []).length > 0 ? (
+                              (day.ingredients || []).map((ingredient, index) => (
+                                <span key={index} className="inline-flex items-center">
+                                  {React.cloneElement(ingredientIcons[ingredient] || <span>{ingredient}</span>, {
+                                    className: 'w-7 h-auto md:w-12 md:h-auto'
+                                  })}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-base text-gray-400">None</span>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-full w-8 h-8 p-0 bg-green-500 hover:bg-green-600 text-white"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <line x1="12" y1="5" x2="12" y2="19"></line>
                               <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
-                          )}
-                        </Button>
+                          </Button>
+                        </div>
                       </PopoverTrigger>
-                      <PopoverContent className="w-60" onClick={(e) => e.stopPropagation()}>
-                        <div className="grid gap-4">
-                          <div className="flex justify-between items-center">
-                            <h4 className="font-bold leading-none">Guests</h4>
+                      <PopoverContent
+                        className="w-[100vw] md:w-96 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0"
+                        onOpenAutoFocus={(e) => e.preventDefault()}
+                      >
+                        <div className="relative z-50 bg-white rounded-lg">
+                          <div className="flex justify-between items-center mb-4">
+                            <h4 className="font-bold leading-none">Ingredients</h4>
                             <button
-                              onClick={() => {
-                                const popoverTrigger = document.querySelector('[data-state="open"]');
-                                if (popoverTrigger instanceof HTMLElement) {
-                                  popoverTrigger.click();
-                                }
-                              }}
+                              onClick={closePopover}
                               className="text-gray-500 hover:text-gray-700 font-bold text-xl"
                             >
                               ✕
                             </button>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              type="number"
-                              value={guestCount}
-                              onChange={(e) => {
-                                const newGuestCount = parseInt(e.target.value) || 0;
-                                setGuestCount(newGuestCount);
-                              }}
-                              onBlur={async () => {
-                                const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(day.date).getDay());
-                                const hasNoAttendeesOrCooks = (day.attendants?.length === 0 || !day.attendants) && (day.cooks?.length === 0 || !day.cooks);
-
-                                if (isSuspendedDay && hasNoAttendeesOrCooks) {
-                                  const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' });
-                                  const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
-                                  if (!confirmed) {
-                                    setGuestCount(0);
-                                    return;
-                                  }
-                                }
-                                updateGuestAttendance(day.date, guestCount);
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === 'Escape') {
-                                  e.currentTarget.blur();
-                                  const popoverTrigger = document.querySelector('[data-state="open"]');
-                                  if (popoverTrigger instanceof HTMLElement) {
-                                    popoverTrigger.click();
-                                  }
-                                }
-                              }}
-                              autoFocus
-                              onFocus={(e) => e.target.select()}
-                              min={0}
-                            />
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {[
+                              ['Beef', 'Pork', 'Chicken', 'Fish', 'Minced Meat'],
+                              ['Rice', 'Potatoes', 'Pasta', 'Bread'],
+                              ['Salad', 'Cheese']
+                            ].map((column, columnIndex) => (
+                              <div key={columnIndex} className="space-y-2">
+                                {column.map((ingredientName) => (
+                                  <div
+                                    key={ingredientName}
+                                    className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-colors duration-200 ${day.ingredients.includes(ingredientName)
+                                      ? 'bg-blue-100 hover:bg-blue-200'
+                                      : 'hover:bg-gray-100'
+                                      }`}
+                                    onClick={() => {
+                                      updateIngredients(day.date, ingredientName, !day.ingredients.includes(ingredientName));
+                                    }}
+                                  >
+                                    <span className="w-10 h-10 flex items-center justify-center">
+                                      {ingredientIcons[ingredientName]}
+                                    </span>
+                                    <span>{ingredientName}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </PopoverContent>
                     </Popover>
                   </div>
+                  <div
+                    className="flex-1 p-2 relative cursor-pointer"
+                    onMouseDown={(e) => {
+                      if (isIngredientsPopupOpen) {
+                        return;
+                      }
+                      const startTime = new Date().getTime();
+                      const startX = e.clientX;
+                      const startY = e.clientY;
+                      const timer = setTimeout(() => {
+                        handleLongPress(day);
+                        setLongPressedDay(day);
+                        setIsLongPressModalOpen(true);
+                      }, 500);
+                      const clearTimer = () => {
+                        clearTimeout(timer);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                        document.removeEventListener('mousemove', handleMouseMove);
+                      };
+                      const handleMouseUp = () => {
+                        clearTimer();
+                        const endTime = new Date().getTime();
+                        if (endTime - startTime < 500) {
+                          const currentAttendant = day.attendants.find(a => a.id === currentUserId);
+                          toggleAttendance(day.date, currentAttendant?.isTakeAway || false, userPortions);
+                        }
+                      };
+                      const handleMouseMove = (moveEvent: MouseEvent) => {
+                        const moveThreshold = 10; // pixels
+                        const deltaX = Math.abs(moveEvent.clientX - startX);
+                        const deltaY = Math.abs(moveEvent.clientY - startY);
+                        if (deltaX > moveThreshold || deltaY > moveThreshold) {
+                          clearTimer();
+                        }
+                      };
+                      document.addEventListener('mouseup', handleMouseUp);
+                      document.addEventListener('mousemove', handleMouseMove);
+                      e.currentTarget.addEventListener('mouseleave', clearTimer, { once: true });
+                    }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      if (!isIngredientsPopupOpen) {
+                        handleLongPress(day);
+                        setLongPressedDay(day);
+                        setIsLongPressModalOpen(true);
+                      }
+                    }}
+                    onTouchStart={(e) => {
+                      const timer = setTimeout(() => {
+                        handleLongPress(day);
+                        setLongPressedDay(day);
+                        setIsLongPressModalOpen(true);
+                      }, 500);
+                      const clearTimer = () => clearTimeout(timer);
+                      e.currentTarget.addEventListener('touchend', clearTimer, { once: true });
+                      e.currentTarget.addEventListener('touchmove', clearTimer, { once: true });
+                    }}
+                  >
+                    <div className="w-full h-full flex items-center justify-between">
+                      {day.attendants.length > 0 ? (
+                        <div className="flex items-center w-full h-full pr-10">
+                          <span className="mr-2 px-2 py-1 text-sm font-bold bg-gray-100 rounded">
+                            {day.attendants.reduce((total, attendant) => {
+                              if (attendant.id.startsWith('guest-')) {
+                                return total + 1; // Count guests as 1 portion each
+                              }
+                              return total + (Number(attendant.portions) || 0);
+                            }, 0)}
+                          </span>
+                          <div className="flex flex-wrap items-center gap-1 flex-grow">
+                            {day.attendants
+                              .filter(attendant => !attendant.id.startsWith('guest-'))
+                              .map((attendant) => (
+                                <UserTag
+                                  key={attendant.id}
+                                  user={users.find(user => user.id === attendant.id) || { id: attendant.id, raw_user_meta_data: {} }}
+                            portions={attendant.portions}
+                            isTakeAway={attendant.isTakeAway}
+                            showRemoveButton={attendant.id === currentUserId}
+                            onRemove={() => toggleAttendance(day.date, attendant.isTakeAway)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-base text-gray-400 w-full h-full flex items-center">None</span>
+                      )}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="rounded-full w-8 h-8 md:w-12 md:h-12 p-0 ml-1 flex-shrink-0 flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const guestCount = day.attendants.filter(a => a.id.startsWith('guest-')).length;
+                              setGuestCount(guestCount);
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                            }}
+                            onTouchStart={(e) => {
+                              e.stopPropagation();
+                            }}
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            {day.attendants.some(a => a.id.startsWith('guest-')) ? (
+                              <span className="text-gray-500 font-bold text-sm md:text-lg flex items-center justify-center w-full h-full">
+                                {day.attendants.filter(a => a.id.startsWith('guest-')).length}G
+                              </span>
+                            ) : (
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 md:w-6 md:h-6">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                              </svg>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-60" onClick={(e) => e.stopPropagation()}>
+                          <div className="grid gap-4">
+                            <div className="flex justify-between items-center">
+                              <h4 className="font-bold leading-none">Guests</h4>
+                              <button
+                                onClick={() => {
+                                  const popoverTrigger = document.querySelector('[data-state="open"]');
+                                  if (popoverTrigger instanceof HTMLElement) {
+                                    popoverTrigger.click();
+                                  }
+                                }}
+                                className="text-gray-500 hover:text-gray-700 font-bold text-xl"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                type="number"
+                                value={guestCount}
+                                onChange={(e) => {
+                                  const newGuestCount = parseInt(e.target.value) || 0;
+                                  setGuestCount(newGuestCount);
+                                }}
+                                onBlur={async () => {
+                                  const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(day.date).getDay());
+                                  const hasNoAttendeesOrCooks = (day.attendants?.length === 0 || !day.attendants) && (day.cooks?.length === 0 || !day.cooks);
+
+                                  if (isSuspendedDay && hasNoAttendeesOrCooks) {
+                                    const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' });
+                                    const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
+                                    if (!confirmed) {
+                                      setGuestCount(0);
+                                      return;
+                                    }
+                                  }
+                                  updateGuestAttendance(day.date, guestCount);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === 'Escape') {
+                                    e.currentTarget.blur();
+                                    const popoverTrigger = document.querySelector('[data-state="open"]');
+                                    if (popoverTrigger instanceof HTMLElement) {
+                                      popoverTrigger.click();
+                                    }
+                                  }
+                                }}
+                                autoFocus
+                                onFocus={(e) => e.target.select()}
+                                min={0}
+                              />
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </CardContent>
-      <div className="flex justify-center mt-4 mb-4 space-x-4">
-        <Button onClick={() => changeWeek(-1)}>Previous 4 Weeks</Button>
-        <Button onClick={() => changeWeek(1)}>Next 4 Weeks</Button>
+        </CardContent>
+        <div className="flex justify-center mt-4 mb-4 space-x-4">
+          <Button onClick={() => changeWeek(-1)}>Previous 4 Weeks</Button>
+          <Button onClick={() => changeWeek(1)}>Next 4 Weeks</Button>
         </div>
       </Card>
       <LongPressModal
