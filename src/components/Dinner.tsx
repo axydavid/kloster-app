@@ -628,7 +628,7 @@ const Dinner: React.FC = () => {
         <div className="flex flex-col">
           <div ref={tableHeaderRef} className="flex bg-gray-100 font-bold border-t border-gray-300" style={fixedHeaderStyle}>
             <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-b border-r border-gray-300">Day</div>
-            <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-b border-r border-gray-300">Chef</div>
+            <div className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-b border-r border-gray-300">Chef</div>
             <div className="flex-1 p-2 border-b border-r border-gray-300">Ingredients</div>
             <div className="flex-1 p-2 border-b border-gray-300">Attendants</div>
           </div>
@@ -656,15 +656,22 @@ const Dinner: React.FC = () => {
                   </div>
                 </div>
                 <div
-                  className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-r border-gray-300 cursor-pointer flex items-center"
-                  onClick={() => toggleCook(day.date)}
+                  className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-r border-gray-300 cursor-pointer"
+                  onClick={(e) => {
+                    // Only trigger if not clicking on a button within UserTag
+                    if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+                      toggleCook(day.date);
+                    }
+                  }}
                 >
                   {day.cooks && day.cooks.length > 0 ? (
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center gap-1 w-full">
                       {day.cooks.map((cookId) => (
-                        <UserIcon
+                        <UserTag
                           key={cookId}
                           user={users.find(user => user.id === cookId) || { id: cookId, raw_user_meta_data: {} }}
+                          portions={1} // Default value
+                          isTakeAway={false} // Default value
                           showRemoveButton={cookId === currentUserId}
                           onRemove={() => toggleCook(day.date)}
                         />
@@ -819,7 +826,7 @@ const Dinner: React.FC = () => {
                             return total + (Number(attendant.portions) || 0);
                           }, 0)}
                         </span>
-                        <div className="flex items-center gap-1 h-full overflow-hidden flex-grow">
+                        <div className="flex flex-wrap items-center gap-1 overflow-y-auto overflow-x-hidden flex-grow">
                           {day.attendants
                             .filter(attendant => !attendant.id.startsWith('guest-'))
                             .map((attendant) => (
