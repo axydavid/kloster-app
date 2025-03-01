@@ -4,6 +4,7 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { X, UserRound, ShoppingBag } from 'lucide-react';
+import UserTag from './UserTag';
 import ToDo from './ToDo';
 import { calculateWashingCost } from '../utils/washingCost';
 import { supabase } from '../utils/createClient';
@@ -445,23 +446,14 @@ const Dashboard: React.FC = () => {
                       // Combine guests into a single element if there are any
                       const elements = [...nonGuestAttendants.map((attendant) => {
                         const user = users?.find(u => u.id === attendant.id);
-                        const userColor = user?.raw_user_meta_data?.iconColor || '#4F46E5';
                         
                         return (
-                          <div 
-                            key={attendant.id} 
-                            style={{ backgroundColor: userColor }}
-                            className={`px-3 py-1 rounded-full text-sm font-bold text-white flex items-center gap-1 relative
-                            ${attendant.isTakeAway ? 'border-2 border-dashed border-white opacity-70' : ''}`}
-                          >
-                            <span>{user?.raw_user_meta_data?.display_name || 'Unknown'}</span>
-                            {attendant.portions > 1 && <span className="">({attendant.portions})</span>}
-                            {attendant.isTakeAway && (
-                              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm">
-                                <ShoppingBag size={14} className="text-gray-600" />
-                              </div>
-                            )}
-                          </div>
+                          <UserTag
+                            key={attendant.id}
+                            user={user || { id: attendant.id, raw_user_meta_ {} }}
+                            portions={attendant.portions}
+                            isTakeAway={attendant.isTakeAway}
+                          />
                         );
                       })];
                       

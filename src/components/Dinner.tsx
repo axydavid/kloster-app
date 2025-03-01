@@ -5,6 +5,7 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import UserIcon from './UserIcon';
+import UserTag from './UserTag';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { UserContext } from './Layout';
 import { useNavigate } from 'react-router-dom';
