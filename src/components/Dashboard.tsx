@@ -473,7 +473,7 @@ const Dashboard: React.FC = () => {
                             style={{ backgroundColor: 'white' }}
                             className="px-3 py-1 rounded-full text-sm font-bold text-gray-500 flex items-center gap-1 border border-gray-300"
                           >
-                            <span>Guests{guestCount > 1 ? ` (${guestCount})` : ''}</span>
+                            <span>Guest{guestCount > 1 ? `s (${guestCount})` : ''}</span>
                           </div>
                         );
                       }
