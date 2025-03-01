@@ -46,10 +46,15 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchBookings();
     fetchCurrentUser();
     fetchAdminSettings();
   }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchBookings();
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (currentUser) {
@@ -115,9 +120,13 @@ const Dashboard: React.FC = () => {
     oneDayAfter.setDate(oneDayAfter.getDate() + 1);
     oneDayAfter.setHours(23, 59, 59, 999);
 
+    // Only fetch current user's bookings
+    if (!currentUser) return;
+
     const { data, error } = await supabase
       .from('washing_reservations')
       .select('*')
+      .eq('user_id', currentUser)
       .gte('start_time', sixDaysBefore.toISOString())
       .lte('start_time', oneDayAfter.toISOString())
       .order('start_time', { ascending: true });
