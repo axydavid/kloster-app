@@ -764,6 +764,10 @@ const Dinner: React.FC = () => {
                       if (isIngredientsPopupOpen) {
                         return;
                       }
+                      // Check if right mouse button was clicked
+                      if (e.button === 2) {
+                        return; // Don't do anything on right click
+                      }
                       const startTime = new Date().getTime();
                       const startX = e.clientX;
                       const startY = e.clientY;
