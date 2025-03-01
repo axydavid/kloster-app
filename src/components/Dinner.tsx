@@ -470,6 +470,55 @@ const Dinner: React.FC = () => {
     }
   };
 
+  // Handle explicit leaving (canceling attendance)
+  const handleLeaveAttendance = async (date: string) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('No authenticated user');
+      if (!(await handleRestrictedAccess())) return;
+
+      const currentUserId = user.id;
+
+      // Fetch the existing day
+      const { data: existingDay, error: fetchError } = await supabase
+        .from('dinner_days')
+        .select('attendants, cooks, ingredients')
+        .eq('date', date)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
+
+      let attendants: Attendant[] = existingDay?.attendants || [];
+      let cooks: string[] = existingDay?.cooks || [];
+      let ingredients: string[] = existingDay?.ingredients || [];
+
+      // Remove the user from attendants
+      attendants = attendants.filter(a => a.id !== currentUserId);
+
+      const { error: upsertError } = await supabase
+        .from('dinner_days')
+        .upsert({ date, attendants, cooks, ingredients });
+
+      if (upsertError) throw upsertError;
+
+      // Update the local state immediately
+      setDinnerDays(prevDays =>
+        prevDays.map(d =>
+          d.date === date ? { ...d, attendants, cooks, ingredients } : d
+        )
+      );
+
+      // Fetch the updated data to ensure we have the latest state
+      await fetchDinnerDays();
+    } catch (error) {
+      console.error('Error leaving attendance:', error);
+    }
+  };
+
+  // Updated to handle mode switching instead of toggling
   const toggleAttendance = async (date: string, isTakeAway: boolean = false, portions: number = userPortions) => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -506,12 +555,16 @@ const Dinner: React.FC = () => {
       }
 
       const existingAttendantIndex = attendants.findIndex(a => a.id === currentUserId);
-
+      
       if (existingAttendantIndex !== -1) {
-        // Remove existing attendance
-        attendants.splice(existingAttendantIndex, 1);
+        // User is already attending, update their attendance type and portions
+        attendants[existingAttendantIndex] = {
+          ...attendants[existingAttendantIndex],
+          isTakeAway,
+          portions
+        };
       } else {
-        // Add new attendance
+        // User is not attending, add them
         attendants.push({
           id: currentUserId,
           portions,
@@ -537,7 +590,6 @@ const Dinner: React.FC = () => {
       await fetchDinnerDays();
     } catch (error) {
       console.error('Error updating attendance:', error);
-      // You might want to show an error message to the user here
     }
   };
 
@@ -846,17 +898,15 @@ const Dinner: React.FC = () => {
                                   portions={attendant.portions}
                                   isTakeAway={attendant.isTakeAway}
                                   showRemoveButton={attendant.id === currentUserId}
-                                  onRemove={() => toggleAttendance(day.date, attendant.isTakeAway)}
+                                  onRemove={() => handleLeaveAttendance(day.date)}
                                 />
                               ))}
                             {/* Display guest count if there are any */}
                             {day.attendants.some(a => a.id.startsWith('guest-')) && (
                               <div
-                                className="px-3 py-1 rounded-full text-sm font-bold text-gray-500 flex items-center
- gap-1 border border-gray-300 bg-white"
+                                className="px-3 py-1 rounded-full text-sm font-bold text-gray-500 flex items-center gap-1 border border-gray-300 bg-white"
                               >
-                                <span>Guest{day.attendants.filter(a => a.id.startsWith('guest-')).length > 1 ? `s
- (${day.attendants.filter(a => a.id.startsWith('guest-')).length})` : ''}</span>
+                                <span>Guest{day.attendants.filter(a => a.id.startsWith('guest-')).length > 1 ? `s (${day.attendants.filter(a => a.id.startsWith('guest-')).length})` : ''}</span>
                               </div>
                             )}
                           </div>
@@ -892,9 +942,16 @@ const Dinner: React.FC = () => {
             setIsLongPressModalOpen(false);
           }
         }}
+        onLeave={() => {
+          if (longPressedDay) {
+            handleLeaveAttendance(longPressedDay.date);
+            setIsLongPressModalOpen(false);
+          }
+        }}
         onAddGuests={(guestCount: number) => {
           if (longPressedDay) {
             updateGuestAttendance(longPressedDay.date, guestCount);
+            setIsLongPressModalOpen(false);
           }
         }}
         initialGuestCount={longPressedDay ? longPressedDay.attendants.filter(a => a.id.startsWith('guest-')).length : 0}

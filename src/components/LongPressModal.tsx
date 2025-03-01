@@ -1,8 +1,8 @@
-// LongPressModal.tsx with updated logic
+// Updated LongPressModal.tsx with replaced Leave button
 import React, { useEffect, useCallback, useState } from 'react';
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
-import { Users, ShoppingBag, Utensils, UserPlus } from 'lucide-react';
+import { Users, ShoppingBag, Utensils, UserPlus, LogOut } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
@@ -13,6 +13,7 @@ interface LongPressModalProps {
   onJoin: (portions: number) => void;
   onTakeAway: (portions: number) => void;
   onAddGuests: (guestCount: number) => void;
+  onLeave?: () => void; // For leaving
   initialGuestCount?: number;
   currentUserAttendance?: {
     isAttending: boolean;
@@ -27,6 +28,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
   onJoin,
   onTakeAway,
   onAddGuests,
+  onLeave,
   initialGuestCount = 0,
   currentUserAttendance
 }) => {
@@ -106,24 +108,43 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
           </div>
 
           <div className="flex space-x-3 mb-5">
-            <Button
-              onClick={() => onJoin(userPortions)}
-              className={`flex-1 ${currentUserAttendance?.isAttending && !currentUserAttendance?.isTakeAway 
-                ? 'bg-blue-700 hover:bg-blue-800' 
-                : 'bg-blue-500 hover:bg-blue-600'}`}
-            >
-              <Users className="mr-2 h-4 w-4" />
-              {currentUserAttendance?.isAttending && !currentUserAttendance?.isTakeAway ? 'Leave' : 'Join'}
-            </Button>
-            <Button
-              onClick={() => onTakeAway(userPortions)}
-              className={`flex-1 ${currentUserAttendance?.isAttending && currentUserAttendance?.isTakeAway 
-                ? 'bg-green-700 hover:bg-green-800' 
-                : 'bg-green-500 hover:bg-green-600'}`}
-            >
-              <ShoppingBag className="mr-2 h-4 w-4" />
-              {currentUserAttendance?.isAttending && currentUserAttendance?.isTakeAway ? 'Cancel' : 'Take Away'}
-            </Button>
+            {/* Join/Leave Button */}
+            {currentUserAttendance?.isAttending && !currentUserAttendance?.isTakeAway ? (
+              <Button
+                onClick={onLeave}
+                className="flex-1 bg-red-500 hover:bg-red-600"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Leave
+              </Button>
+            ) : (
+              <Button
+                onClick={() => onJoin(userPortions)}
+                className="flex-1 bg-blue-500 hover:bg-blue-600"
+              >
+                <Users className="mr-2 h-4 w-4" />
+                {currentUserAttendance?.isAttending && currentUserAttendance?.isTakeAway ? 'Switch to Join' : 'Join'}
+              </Button>
+            )}
+            
+            {/* TakeAway/Leave Button */}
+            {currentUserAttendance?.isAttending && currentUserAttendance?.isTakeAway ? (
+              <Button
+                onClick={onLeave}
+                className="flex-1 bg-red-500 hover:bg-red-600"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Leave
+              </Button>
+            ) : (
+              <Button
+                onClick={() => onTakeAway(userPortions)}
+                className="flex-1 bg-green-500 hover:bg-green-600"
+              >
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                {currentUserAttendance?.isAttending && !currentUserAttendance?.isTakeAway ? 'Switch to Take Away' : 'Take Away'}
+              </Button>
+            )}
           </div>
 
           <div className="border-t pt-4 mt-4">
