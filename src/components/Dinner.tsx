@@ -629,7 +629,7 @@ const Dinner: React.FC = () => {
             <div ref={tableHeaderRef} className="flex bg-gray-100 font-bold border-t border-gray-300" style={fixedHeaderStyle}>
               <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-b border-r border-gray-300">Day</div>
               <div className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-b border-r border-gray-300">Chef</div>
-              <div className="flex-1 p-2 border-b border-r border-gray-300">Ingredients</div>
+              <div className="hidden md:block flex-1 p-2 border-b border-r border-gray-300">Ingredients</div>
               <div className="flex-1 p-2 border-b border-gray-300">Attendants</div>
             </div>
             <div className="flex-1 overflow-y-auto">
@@ -682,7 +682,7 @@ const Dinner: React.FC = () => {
                       <span className="text-base text-gray-400 w-full h-full flex items-center justify-center">Cook</span>
                     )}
                   </div>
-                  <div className="flex-1 p-2 border-r border-gray-300 relative group">
+                  <div className="hidden md:block flex-1 p-2 border-r border-gray-300 relative group">
                     <Popover onOpenChange={handlePopoverOpenChange}>
                       <PopoverTrigger asChild>
                         <div className="cursor-pointer h-full w-full flex items-center" onClick={(e) => {
