@@ -837,7 +837,9 @@ const Dinner: React.FC = () => {
                         clearTimer();
                         const endTime = new Date().getTime();
                         if (endTime - startTime < 500) {
+                          // Get current attendance status
                           const currentAttendant = day.attendants.find(a => a.id === currentUserId);
+                          // Toggle with the same takeaway status (to properly toggle on/off)
                           toggleAttendance(day.date, currentAttendant?.isTakeAway || false, userPortions);
                         }
                       };
