@@ -17,8 +17,8 @@ import { calculateWashingCost } from '../utils/washingCost'; // Import the utili
 import { supabase } from '../utils/createClient';
 
 // Function to check if a time slot is during church hours
-const isChurchTime = (date: Date, churchStartHour: number, churchEndHour: number): boolean => {
-  return date.getDay() === 6 && date.getHours() >= churchStartHour && date.getHours() < churchEndHour;
+const isChurchTime = (date: Date, churchDay: number, churchStartHour: number, churchEndHour: number): boolean => {
+  return date.getDay() === churchDay && date.getHours() >= churchStartHour && date.getHours() < churchEndHour;
 };
 
 const showConfirmationDialog = async (message: string): Promise<void> => {
@@ -128,6 +128,7 @@ const WashingReservation: React.FC = () => {
   const [washingEvents, setWashingEvents] = useState<CalendarEvent[]>([]);
   const [washingStartHour, setWashingStartHour] = useState(8);
   const [washingEndHour, setWashingEndHour] = useState(22);
+  const [churchDay, setChurchDay] = useState(6); // Default to Saturday (6)
   const [churchStartHour, setChurchStartHour] = useState(11);
   const [churchEndHour, setChurchEndHour] = useState(18);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -219,6 +220,7 @@ const WashingReservation: React.FC = () => {
       const adminSettings = await fetchAdminSettings();
       setWashingStartHour(adminSettings.washing_start_hour);
       setWashingEndHour(adminSettings.washing_end_hour);
+      setChurchDay(adminSettings.church_day ?? 6); // Default to Saturday (6) if not set
       setChurchStartHour(adminSettings.church_start_hour);
       setChurchEndHour(adminSettings.church_end_hour);
     };
@@ -265,7 +267,7 @@ const WashingReservation: React.FC = () => {
         const isOverlapping = washingEvents.some(event =>
           (slotInfo.start < event.end && slotInfo.end > event.start)
         );
-        const isChurchTimeSlot = avoidChurchTime && (isChurchTime(slotInfo.start, churchStartHour, churchEndHour) || isChurchTime(new Date(slotInfo.end.getTime() - 1), churchStartHour, churchEndHour));
+        const isChurchTimeSlot = avoidChurchTime && (isChurchTime(slotInfo.start, churchDay, churchStartHour, churchEndHour) || isChurchTime(new Date(slotInfo.end.getTime() - 1), churchDay, churchStartHour, churchEndHour));
         const isWorkTimeSlot = hasWorkSchedule && slotInfo.start.getDay() >= 1 && slotInfo.start.getDay() <= 5 &&
           (slotInfo.start.getHours() >= parseInt(workStartTime) && slotInfo.start.getHours() < parseInt(workEndTime));
 
@@ -273,7 +275,8 @@ const WashingReservation: React.FC = () => {
           setSelectedSlot(slotInfo.start);
           setSelectedEndSlot(slotInfo.end);
         } else if (isChurchTimeSlot) {
-          showConfirmationDialog("This time slot is during church hours (Saturday 11:00-18:00). Please select another time or disable church time.");
+          const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][churchDay];
+          showConfirmationDialog(`This time slot is during church hours (${dayName} ${churchStartHour}:00-${churchEndHour}:00). Please select another time or disable church time.`);
         } else if (isWorkTimeSlot) {
           showConfirmationDialog("This time slot is during your work hours. Please select another time or change your work schedule.");
         } else {
@@ -495,7 +498,7 @@ const WashingReservation: React.FC = () => {
     const isAvailableSlot = (start: Date, end: Date) => {
       return isOutsideWorkHours(start, end) &&
         !isTimeSlotOccupied(start, end) &&
-        (!avoidChurchTime || (!isChurchTime(start, churchStartHour, churchEndHour) && !isChurchTime(new Date(end.getTime() - 1), churchStartHour, churchEndHour))) &&
+        (!avoidChurchTime || (!isChurchTime(start, churchDay, churchStartHour, churchEndHour) && !isChurchTime(new Date(end.getTime() - 1), churchDay, churchStartHour, churchEndHour))) &&
         (start.getHours() >= washingStartHour && end.getHours() <= washingEndHour);
     };
 
@@ -693,7 +696,9 @@ const WashingReservation: React.FC = () => {
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
-                <p className="text-sm text-muted-foreground">Avoid Saturday {churchStartHour}:00-{churchEndHour}:00</p>
+                <p className="text-sm text-muted-foreground">
+                  Avoid {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][churchDay]} {churchStartHour}:00-{churchEndHour}:00
+                </p>
               </div>
             </div>
             <div className="bg-secondary p-4 rounded-lg shadow-sm max-w-md mx-auto">
