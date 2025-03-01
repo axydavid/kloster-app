@@ -849,7 +849,7 @@ const Dinner: React.FC = () => {
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
-                          className="rounded-full w-8 h-8 md:w-12 md:h-12 p-0 absolute right-2 top-1/2 transform -translate-y-1/2 guest-button flex items-center justify-center"
+                          className="rounded-full w-8 h-8 md:w-12 md:h-12 p-0 ml-1 flex-shrink-0 flex items-center justify-center"
                           onClick={(e) => {
                             e.stopPropagation();
                             const guestCount = day.attendants.filter(a => a.id.startsWith('guest-')).length;
