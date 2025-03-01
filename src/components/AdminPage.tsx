@@ -82,9 +82,9 @@ const AdminPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mx-auto max-w-5xl">
       <div className="flex flex-col gap-6">
-        <Card className="flex-1 max-w-3xl">
+        <Card className="flex-1 w-full">
           <CardHeader>
             <CardTitle>Admin Settings</CardTitle>
           </CardHeader>
@@ -234,7 +234,7 @@ const AdminPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="flex-1 max-w-3xl">
+        <Card className="flex-1 w-full">
           <CardHeader>
             <CardTitle>Users</CardTitle>
           </CardHeader>
