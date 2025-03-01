@@ -518,7 +518,7 @@ const Dinner: React.FC = () => {
     }
   };
 
-  // Updated to handle mode switching instead of toggling
+  // Updated to handle toggling attendance properly
   const toggleAttendance = async (date: string, isTakeAway: boolean = false, portions: number = userPortions) => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -557,14 +557,10 @@ const Dinner: React.FC = () => {
       const existingAttendantIndex = attendants.findIndex(a => a.id === currentUserId);
       
       if (existingAttendantIndex !== -1) {
-        // User is already attending, update their attendance type and portions
-        attendants[existingAttendantIndex] = {
-          ...attendants[existingAttendantIndex],
-          isTakeAway,
-          portions
-        };
+        // User is already attending, remove them (toggle off)
+        attendants = attendants.filter(a => a.id !== currentUserId);
       } else {
-        // User is not attending, add them
+        // User is not attending, add them (toggle on)
         attendants.push({
           id: currentUserId,
           portions,
@@ -839,8 +835,8 @@ const Dinner: React.FC = () => {
                         if (endTime - startTime < 500) {
                           // Get current attendance status
                           const currentAttendant = day.attendants.find(a => a.id === currentUserId);
-                          // Toggle with the same takeaway status (to properly toggle on/off)
-                          toggleAttendance(day.date, currentAttendant?.isTakeAway || false, userPortions);
+                          // Toggle attendance (add if not present, remove if present)
+                          toggleAttendance(day.date, false, userPortions);
                         }
                       };
                       const handleMouseMove = (moveEvent: MouseEvent) => {
