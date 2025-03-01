@@ -434,40 +434,52 @@ const Dashboard: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {upcomingDinner.attendants && upcomingDinner.attendants.map((attendant) => {
-                      // Find the user in the users context
-                      const user = users?.find(u => u.id === attendant.id);
-                      const isGuest = attendant.id.startsWith('guest-');
-                      const userColor = user?.raw_user_meta_data?.iconColor || '#4F46E5';
+                    {upcomingDinner.attendants && (() => {
+                      // Count guests
+                      const guests = upcomingDinner.attendants.filter(a => a.id.startsWith('guest-'));
+                      const guestCount = guests.length;
                       
-                      return (
-                        <div 
-                          key={attendant.id} 
-                          style={{ 
-                            backgroundColor: isGuest ? '#F59E0B' : userColor,
-                          }}
-                          className={`px-3 py-1 rounded-full text-sm font-bold text-white flex items-center gap-1 relative
-                          ${attendant.isTakeAway ? 'border-2 border-dashed border-white opacity-70' : ''}`}
-                        >
-                          {isGuest ? (
-                            <>
-                              <span>Guest</span>
-                              {attendant.portions > 1 && <span className="">({attendant.portions})</span>}
-                            </>
-                          ) : (
-                            <>
-                              <span>{user?.raw_user_meta_data?.display_name || 'Unknown'}</span>
-                              {attendant.portions > 1 && <span className="">({attendant.portions})</span>}
-                              {attendant.isTakeAway && (
-                                <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm">
-                                  <ShoppingBag size={14} className="text-gray-600" />
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      );
-                    })}
+                      // Get non-guest attendants
+                      const nonGuestAttendants = upcomingDinner.attendants.filter(a => !a.id.startsWith('guest-'));
+                      
+                      // Combine guests into a single element if there are any
+                      const elements = [...nonGuestAttendants.map((attendant) => {
+                        const user = users?.find(u => u.id === attendant.id);
+                        const userColor = user?.raw_user_meta_data?.iconColor || '#4F46E5';
+                        
+                        return (
+                          <div 
+                            key={attendant.id} 
+                            style={{ backgroundColor: userColor }}
+                            className={`px-3 py-1 rounded-full text-sm font-bold text-white flex items-center gap-1 relative
+                            ${attendant.isTakeAway ? 'border-2 border-dashed border-white opacity-70' : ''}`}
+                          >
+                            <span>{user?.raw_user_meta_data?.display_name || 'Unknown'}</span>
+                            {attendant.portions > 1 && <span className="">({attendant.portions})</span>}
+                            {attendant.isTakeAway && (
+                              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm">
+                                <ShoppingBag size={14} className="text-gray-600" />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })];
+                      
+                      // Add guest element if there are guests
+                      if (guestCount > 0) {
+                        elements.push(
+                          <div 
+                            key="guests" 
+                            style={{ backgroundColor: '#F59E0B' }}
+                            className="px-3 py-1 rounded-full text-sm font-bold text-white flex items-center gap-1"
+                          >
+                            <span>Guests{guestCount > 1 ? ` (${guestCount})` : ''}</span>
+                          </div>
+                        );
+                      }
+                      
+                      return elements;
+                    })()}
                   </div>
                   
                   <div className="flex justify-between items-center mb-2">
