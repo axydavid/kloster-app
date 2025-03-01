@@ -447,53 +447,83 @@ const Dashboard: React.FC = () => {
       </div>
       {bookings.length > 0 && (
         <div className="col-span-1">
-          <Card>
+          <Card className="overflow-hidden shadow-lg">
             <CardHeader>
-              <CardTitle>Recent Washing</CardTitle>
+              <CardTitle className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                  <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/>
+                </svg>
+                Recent Washing
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              {bookings.map((booking) => (
-                <Card key={booking.id} className="mb-6">
-                  <CardContent className="p-6 relative">
-                    <Button
-                      onClick={() => handleDeleteBooking(booking.id)}
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 rounded-full w-8 h-8 p-0"
-                    >
-                      <X size={16} />
-                    </Button>
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold text-primary">{booking.user_name}</h3>
-                      <p className="text-sm text-gray-500">{formatTime(booking.start_time, booking.end_time)}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
+            <CardContent className="p-4">
+              <div className="space-y-4">
+                {bookings.map((booking) => (
+                  <div key={booking.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100">
+                    <div className="bg-gray-50 p-3 border-b border-gray-100 flex justify-between items-center">
                       <div>
-                        <Label htmlFor={`washing-${booking.id}`} className="mb-1 block">Washing</Label>
-                        <Input
-                          id={`washing-${booking.id}`}
-                          type="number"
-                          value={booking.washing_count}
-                          onChange={(e) => handleUpdateBooking(booking.id, parseInt(e.target.value), booking.drying_count)}
-                          min={0}
-                          className="w-full"
-                        />
+                        <h3 className="text-lg font-semibold text-primary">{booking.user_name}</h3>
+                        <p className="text-sm text-gray-500">{formatTime(booking.start_time, booking.end_time)}</p>
                       </div>
-                      <div>
-                        <Label htmlFor={`drying-${booking.id}`} className="mb-1 block">Drying</Label>
-                        <Input
-                          id={`drying-${booking.id}`}
-                          type="number"
-                          value={booking.drying_count}
-                          onChange={(e) => handleUpdateBooking(booking.id, booking.washing_count, parseInt(e.target.value))}
-                          min={0}
-                          className="w-full"
-                        />
+                      <Button
+                        onClick={() => handleDeleteBooking(booking.id)}
+                        variant="outline"
+                        size="icon"
+                        className="rounded-full w-8 h-8 p-0 opacity-80 hover:opacity-100"
+                      >
+                        <X size={16} />
+                      </Button>
+                    </div>
+                    <div className="p-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <Label htmlFor={`washing-${booking.id}`} className="mb-1 block font-medium text-blue-700">
+                            <div className="flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M8 12a4 4 0 0 1 8 0Z"/>
+                              </svg>
+                              Washing
+                            </div>
+                          </Label>
+                          <Input
+                            id={`washing-${booking.id}`}
+                            type="number"
+                            value={booking.washing_count}
+                            onChange={(e) => handleUpdateBooking(booking.id, parseInt(e.target.value), booking.drying_count)}
+                            min={0}
+                            className="w-full border-blue-200 focus:border-blue-500"
+                          />
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded-lg">
+                          <Label htmlFor={`drying-${booking.id}`} className="mb-1 block font-medium text-purple-700">
+                            <div className="flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                                <path d="M12 2v4"/>
+                                <path d="m6.8 14-3.5-2"/>
+                                <path d="m20.7 12-3.5 2"/>
+                                <path d="M6.8 10 3.3 12"/>
+                                <path d="m20.7 12-3.5-2"/>
+                                <path d="m9 22 3-8 3 8"/>
+                                <path d="M8 22h8"/>
+                              </svg>
+                              Drying
+                            </div>
+                          </Label>
+                          <Input
+                            id={`drying-${booking.id}`}
+                            type="number"
+                            value={booking.drying_count}
+                            onChange={(e) => handleUpdateBooking(booking.id, booking.washing_count, parseInt(e.target.value))}
+                            min={0}
+                            className="w-full border-purple-200 focus:border-purple-500"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
