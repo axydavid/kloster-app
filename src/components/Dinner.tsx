@@ -816,9 +816,9 @@ const Dinner: React.FC = () => {
                     e.currentTarget.addEventListener('touchmove', clearTimer, { once: true });
                   }}
                 >
-                  <div className="w-full h-full flex items-center">
+                  <div className="w-full h-full flex items-center justify-between">
                     {day.attendants.length > 0 ? (
-                      <div className="flex items-center w-full h-full">
+                      <div className="flex items-center w-full h-full pr-10">
                         <span className="mr-2 px-2 py-1 text-sm font-bold bg-gray-100 rounded">
                           {day.attendants.reduce((total, attendant) => {
                             if (attendant.id.startsWith('guest-')) {
@@ -833,7 +833,7 @@ const Dinner: React.FC = () => {
                             .map((attendant) => (
                               <UserTag
                                 key={attendant.id}
-                                user={users.find(user => user.id === attendant.id) || { id: attendant.id, raw_user_meta_data: {} }}
+                                user={users.find(user => user.id === attendant.id) || { id: attendant.id, raw_user_meta_ {} }}
                                 portions={attendant.portions}
                                 isTakeAway={attendant.isTakeAway}
                                 showRemoveButton={attendant.id === currentUserId}
