@@ -659,7 +659,8 @@ const Dinner: React.FC = () => {
                   className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-r border-gray-300 cursor-pointer"
                   onClick={(e) => {
                     // Only trigger if not clicking on a button within UserTag
-                    if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+                    const target = e.target as HTMLElement;
+                    if (target.tagName !== 'BUTTON' && !target.closest('button')) {
                       toggleCook(day.date);
                     }
                   }}
