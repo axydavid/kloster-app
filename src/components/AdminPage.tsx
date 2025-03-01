@@ -131,7 +131,7 @@ const AdminPage: React.FC = () => {
                         type="number"
                         value={settings.budgetPerMeal}
                         onChange={(e) => setSettings({...settings, budgetPerMeal: parseFloat(e.target.value)})}
-                        className="max-w-[200px]"
+                        className="max-w-[120px]"
                       />
                     </div>
                     <div>
@@ -141,7 +141,7 @@ const AdminPage: React.FC = () => {
                         type="number"
                         value={settings.budgetPerLaundry}
                         onChange={(e) => setSettings({...settings, budgetPerLaundry: parseFloat(e.target.value)})}
-                        className="max-w-[200px]"
+                        className="max-w-[120px]"
                       />
                     </div>
                     <div>
@@ -150,7 +150,7 @@ const AdminPage: React.FC = () => {
                         value={settings.currencyType}
                         onValueChange={(value) => setSettings({...settings, currencyType: value})}
                       >
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-[120px]">
                           <SelectValue placeholder="Select currency" />
                         </SelectTrigger>
                         <SelectContent>
@@ -219,12 +219,12 @@ const AdminPage: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Lunch Schedule</h3>
                   <Label>Suspended Weekdays for Lunch</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-1 mt-2">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
                       <Button
                         key={day}
                         variant="outline"
-                        className={`flex-1 min-w-[4rem] ${settings.suspendedWeekdays.includes(index) ? 'bg-primary text-primary-foreground' : ''}`}
+                        className={`flex-1 min-w-[3rem] text-xs sm:text-sm ${settings.suspendedWeekdays.includes(index) ? 'bg-primary text-primary-foreground' : ''}`}
                         onClick={() => handleWeekdayToggle(index)}
                       >
                         {day}
