@@ -447,7 +447,7 @@ const Dashboard: React.FC = () => {
                             backgroundColor: isGuest ? '#F59E0B' : userColor,
                           }}
                           className={`px-3 py-1 rounded-full text-sm font-bold text-white flex items-center gap-1 relative
-                          ${attendant.isTakeAway ? 'border-2 border-dashed border-white' : ''}`}
+                          ${attendant.isTakeAway ? 'border-2 border-dashed border-white opacity-70' : ''}`}
                         >
                           {isGuest ? (
                             <>
