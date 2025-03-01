@@ -148,7 +148,7 @@ const Users: React.FC = () => {
     try {
       const { data, error } = await supabase.auth.admin.updateUserById(
         userId,
-        { user_meta_ { display_name: newDisplayName } }
+        { user_meta: { display_name: newDisplayName } }
       );
 
       if (error) throw error;
@@ -157,7 +157,7 @@ const Users: React.FC = () => {
       setUsers(users.map(user => 
         user.id === userId ? { 
           ...user, 
-          raw_user_meta_ { 
+          raw_user_meta_: { 
             ...user.raw_user_meta_data, 
             display_name: newDisplayName 
           } 
