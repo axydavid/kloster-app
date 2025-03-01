@@ -18,7 +18,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const {  { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         navigate('/dashboard');
       }
@@ -32,8 +32,8 @@ const Login: React.FC = () => {
       let result;
       if (isSignUp) {
         // Include display_name in user metadata when signing up
-        result = await supabase.auth.signUp({ 
-          email, 
+        result = await supabase.auth.signUp({
+          email,
           password,
           options: {
             data: {
@@ -44,9 +44,9 @@ const Login: React.FC = () => {
       } else {
         result = await supabase.auth.signInWithPassword({ email, password });
       }
-      
+
       if (result.error) throw result.error;
-      
+
       if (isSignUp) {
         alert('Sign up successful! Please check your email to confirm your account.');
       } else {
