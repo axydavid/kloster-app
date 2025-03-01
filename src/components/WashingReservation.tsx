@@ -896,7 +896,7 @@ const WashingReservation: React.FC = () => {
                 const isDisabled = (
                   (hasWorkSchedule && date.getDay() >= 1 && date.getDay() <= 5 && 
                    (date.getHours() >= parseInt(workStartTime) && date.getHours() < parseInt(workEndTime))) ||
-                  (avoidChurchTime && date.getDay() === churchDay && 
+                  (avoidChurchTime && date.getDay() === parseInt(churchDay.toString()) && 
                    date.getHours() >= churchStartHour && date.getHours() < churchEndHour)
                 );
 
