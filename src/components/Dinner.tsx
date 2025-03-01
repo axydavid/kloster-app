@@ -799,6 +799,7 @@ const Dinner: React.FC = () => {
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
+                      // Only show the modal, don't toggle attendance on right-click
                       if (!isIngredientsPopupOpen) {
                         handleLongPress(day);
                         setLongPressedDay(day);
