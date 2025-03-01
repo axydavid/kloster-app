@@ -1,3 +1,4 @@
+// LongPressModal.tsx with updated logic
 import React, { useEffect, useCallback, useState } from 'react';
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -33,6 +34,13 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
   const [guestCount, setGuestCount] = useState(initialGuestCount);
   const [initialPortionsLoaded, setInitialPortionsLoaded] = useState(false);
 
+  // Update portions when currentUserAttendance changes
+  useEffect(() => {
+    if (currentUserAttendance?.portions) {
+      setUserPortions(currentUserAttendance.portions);
+    }
+  }, [currentUserAttendance]);
+
   const handleEscapeKey = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       onClose();
@@ -50,7 +58,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
 
   useEffect(() => {
     const fetchUserPortions = async () => {
-      if (!initialPortionsLoaded) {
+      if (!initialPortionsLoaded && !currentUserAttendance) {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data, error } = await supabase.rpc('get_user_metadata', { user_id: user.id });
@@ -63,7 +71,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
     };
 
     fetchUserPortions();
-  }, [initialPortionsLoaded]);
+  }, [initialPortionsLoaded, currentUserAttendance]);
 
   if (!isOpen) return null;
 

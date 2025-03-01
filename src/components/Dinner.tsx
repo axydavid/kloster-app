@@ -824,7 +824,7 @@ const Dinner: React.FC = () => {
                   >
                     <div className="w-full h-full flex items-center justify-between">
                       {day.attendants.length > 0 ? (
-                        <div className="flex items-center w-full h-full pr-10">
+                        <div className="flex items-center w-full h-full">
                           <span className="mr-2 px-2 py-1 text-sm font-bold bg-gray-100 rounded">
                             {day.attendants.reduce((total, attendant) => {
                               if (attendant.id.startsWith('guest-')) {
