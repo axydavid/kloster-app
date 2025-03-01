@@ -19,12 +19,17 @@
   border: none;
 }
 
+.rbc-event{
+  flex-direction: row;
+}
+
 .rbc-event {
   width: 100% !important;
   left: 0 !important;
   right: 0 !important;
   border: none !important;
   z-index: 20;
+  border-bottom: 1px solid white !important;
 }
 
 .rbc-time-gutter .rbc-time-slot {
