@@ -833,13 +833,26 @@ const Dinner: React.FC = () => {
                               .map((attendant) => (
                                 <UserTag
                                   key={attendant.id}
-                                  user={users.find(user => user.id === attendant.id) || { id: attendant.id, raw_user_meta_data: {} }}
-                            portions={attendant.portions}
-                            isTakeAway={attendant.isTakeAway}
-                            showRemoveButton={attendant.id === currentUserId}
-                            onRemove={() => toggleAttendance(day.date, attendant.isTakeAway)}
-                              />
-                            ))}
+                                  user={users.find(user => user.id === attendant.id) || {
+                                    id: attendant.id,
+                                    raw_user_meta_data: {}
+                                  }}
+                                  portions={attendant.portions}
+                                  isTakeAway={attendant.isTakeAway}
+                                  showRemoveButton={attendant.id === currentUserId}
+                                  onRemove={() => toggleAttendance(day.date, attendant.isTakeAway)}
+                                />
+                              ))}
+                            {/* Display guest count if there are any */}
+                            {day.attendants.some(a => a.id.startsWith('guest-')) && (
+                              <div
+                                className="px-3 py-1 rounded-full text-sm font-bold text-gray-500 flex items-center
+ gap-1 border border-gray-300 bg-white"
+                              >
+                                <span>Guest{day.attendants.filter(a => a.id.startsWith('guest-')).length > 1 ? `s
+ (${day.attendants.filter(a => a.id.startsWith('guest-')).length})` : ''}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ) : (
