@@ -53,14 +53,15 @@ const Users: React.FC = () => {
       alert('Only admins can update user data');
       return false;
     }
-
+  
     try {
+      // For the database, we need to use PostgreSQL's JSON syntax
       const { data, error } = await supabase.rpc('update_user_metadata', {
         user_id: userId,
         metadata_field: field,
-        metadata_value: JSON.stringify(value)  // Convert to JSON string
+        metadata_value: value  // The raw value will be automatically stringified correctly by the SDK
       });
-
+  
       if (error) throw error;
       
       // Update the local state to reflect the change
@@ -75,7 +76,7 @@ const Users: React.FC = () => {
           ...(field === 'type' ? { type: value } : {})
         } : user
       ));
-
+  
       return true;
     } catch (error: any) {
       console.error(`Error updating ${field}:`, error);
@@ -120,7 +121,7 @@ const Users: React.FC = () => {
         email: newUserEmail,
         password: newUserPassword,
         options: {
-          data: { 
+          data: {
             type: newUserType,
             display_name: newUserName
           }
@@ -134,7 +135,7 @@ const Users: React.FC = () => {
       setNewUserPassword('');
       setNewUserName('');
       setNewUserType('user');
-      
+
       if (data.user) {
         const newUser: UserData = {
           id: data.user.id,
@@ -224,7 +225,7 @@ const Users: React.FC = () => {
         </div>
         <Button type="submit">Add User</Button>
       </form>
-      
+
       {users.map((user: UserData) => (
         <div key={user.id} className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 p-2 border-b">
           <div className="flex items-center mb-2 sm:mb-0">
@@ -236,15 +237,15 @@ const Users: React.FC = () => {
                   onChange={(e) => setEditedDisplayName(e.target.value)}
                   className="w-[150px] mr-2"
                 />
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={() => saveDisplayName(user.id)}
                 >
                   Save
                 </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={cancelEditing}
                   className="ml-1"
                 >
@@ -254,9 +255,9 @@ const Users: React.FC = () => {
             ) : (
               <div className="ml-2">
                 <span className="font-medium">{user.raw_user_meta_data?.display_name || 'No display name'}</span>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
+                <Button
+                  size="sm"
+                  variant="ghost"
                   onClick={() => startEditing(user.id, user.raw_user_meta_data?.display_name || '')}
                   className="ml-1 h-6 px-2"
                 >
@@ -267,8 +268,8 @@ const Users: React.FC = () => {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="text-sm text-gray-500">{user.email}</div>
-            <Select 
-              value={user.type} 
+            <Select
+              value={user.type}
               onValueChange={(newType) => handleUpdateUserType(user.id, newType)}
             >
               <SelectTrigger className="w-[100px]">
@@ -279,8 +280,8 @@ const Users: React.FC = () => {
                 <SelectItem value="admin">Admin</SelectItem>
               </SelectContent>
             </Select>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={() => handleDeleteUser(user.id)}
             >
               Delete

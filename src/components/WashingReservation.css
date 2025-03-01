@@ -20,7 +20,8 @@
 }
 
 .rbc-event{
-  flex-direction: row;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
 }
 
 .rbc-event {
