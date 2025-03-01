@@ -11,13 +11,14 @@ const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.R
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const [logoColor, setLogoColor] = useState('#000000'); // Default color for the logo
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {  { session } } = await supabase.auth.getSession();
       if (session) {
         navigate('/dashboard');
       }
@@ -30,7 +31,16 @@ const Login: React.FC = () => {
     try {
       let result;
       if (isSignUp) {
-        result = await supabase.auth.signUp({ email, password });
+        // Include display_name in user metadata when signing up
+        result = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              display_name: displayName
+            }
+          }
+        });
       } else {
         result = await supabase.auth.signInWithPassword({ email, password });
       }
@@ -70,6 +80,18 @@ const Login: React.FC = () => {
           <CardContent>
             <form onSubmit={handleAuth}>
               <div className="grid w-full items-center gap-4">
+                {isSignUp && (
+                  <div className="flex flex-col space-y-1.5">
+                    <Input
+                      id="displayName"
+                      type="text"
+                      placeholder="Name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      required
+                    />
+                  </div>
+                )}
                 <div className="flex flex-col space-y-1.5">
                   <Input
                     id="email"
@@ -77,6 +99,7 @@ const Login: React.FC = () => {
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
                 </div>
                 <div className="flex flex-col space-y-1.5">
@@ -86,6 +109,7 @@ const Login: React.FC = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
                   />
                 </div>
               </div>
