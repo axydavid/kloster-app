@@ -84,7 +84,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
                 onChange={(e) => setUserPortions(Number(e.target.value))}
                 min={1}
                 max={10}
-                className="w-20 pl-8 pr-2 text-center bg-gray-100 text-gray-700"
+                className="w-20 pl-8 pr-2 text-center bg-gray-100 text-gray-500 font-bold text-xl"
                 onFocus={(e) => e.target.select()}
                 style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
               />
@@ -92,14 +92,14 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
           </div>
 
           <div className="flex space-x-3 mb-5">
-            <Button 
+            <Button
               onClick={() => onJoin(userPortions)}
               className="flex-1 bg-blue-500 hover:bg-blue-600"
             >
               <Users className="mr-2 h-4 w-4" />
               Join
             </Button>
-            <Button 
+            <Button
               onClick={() => onTakeAway(userPortions)}
               className="flex-1 bg-green-500 hover:bg-green-600"
             >
@@ -118,13 +118,13 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
                   onChange={(e) => setGuestCount(parseInt(e.target.value) || 0)}
                   min={0}
                   max={20}
-                  className="w-20 pl-8 pr-2 text-center bg-gray-100 text-gray-700"
+                  className="w-20 pl-8 pr-2 text-center bg-gray-100 text-gray-500 font-bold text-xl"
                   onFocus={(e) => e.target.select()}
                   style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
                 />
               </div>
             </div>
-            <Button 
+            <Button
               onClick={() => {
                 onAddGuests(guestCount);
                 onClose();
