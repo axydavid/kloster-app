@@ -89,7 +89,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
           </button>
         </div>
 
-        <div className="mb-6">
+        <div className="">
           <div className="flex justify-center mb-4">
             <div className="relative">
               <Utensils className="text-gray-500 absolute left-2 top-1/2 transform -translate-y-1/2" />

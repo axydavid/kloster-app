@@ -435,12 +435,10 @@ const UserSettings: React.FC = () => {
                         {weekdays.map((day, index) => {
                           const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
                           return (
-                            <div key={day} className="flex flex-col items-center"
-                            onMouseDown={(e)=>{
+                            <div key={day} className="flex flex-col items-center" onMouseDown={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                            }}
-                            >
+                            }}>
                               <Button
                                 type="button"
                                 variant="outline"
@@ -454,8 +452,9 @@ const UserSettings: React.FC = () => {
                                         ? 'bg-yellow-100 hover:bg-yellow-200'
                                         : 'bg-gray-100 hover:bg-gray-200'
                                   }`}
-                                onMouseDown={() => {
-                                  if (!isSuspended) {
+                                onMouseDown={(e) => {
+                                  // Only respond to left clicks (button === 0)
+                                  if (e.button === 0 && !isSuspended) {
                                     const currentValue = dinnerDays[day].status;
                                     const newValue =
                                       currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
@@ -475,7 +474,11 @@ const UserSettings: React.FC = () => {
                                         : 'Never'}
                                 </span>
                                 {!isSuspended && dinnerDays[day].status !== 'never' && (
-                                  <div className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1">
+                                  <div
+                                    className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1"
+                                    onClick={(e) => e.stopPropagation()}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                  >
                                     <Utensils className="text-gray-500 w-4 h-4 mr-1 shrink-0" />
                                     <input
                                       type="text"
@@ -491,9 +494,13 @@ const UserSettings: React.FC = () => {
                                         e.stopPropagation();
                                         (e.target as HTMLInputElement).select();
                                       }}
+                                      onMouseDown={(e) => {
+                                        e.stopPropagation(); // Prevent triggering the parent button
+                                      }}
                                       onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                           e.preventDefault(); // Prevent form submission
+                                          e.stopPropagation();
                                         }
                                       }}
                                       className="w-full p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-gray-500"

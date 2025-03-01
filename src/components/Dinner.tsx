@@ -675,7 +675,7 @@ const Dinner: React.FC = () => {
         <CardContent className="p-0 card-content">
           <div className="flex flex-col">
             <div ref={tableHeaderRef} className="flex bg-gray-100 font-bold border-t border-gray-300" style={fixedHeaderStyle}>
-              <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-b border-r border-gray-300">Day</div>
+              <div className="flex-[0_0_70px] p-2 border-b border-r border-gray-300">Day</div>
               <div className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-b border-r border-gray-300">Chef</div>
               <div className="hidden md:block flex-1 p-2 border-b border-r border-gray-300">Ingredients</div>
               <div className="flex-1 p-2 border-b border-gray-300">Attendants</div>
@@ -689,15 +689,14 @@ const Dinner: React.FC = () => {
                     backgroundColor: isDaySuspended(new Date(day.date))
                       ? 'rgba(229, 231, 235, 0.7)' // Lighter gray with transparency
                       : 'transparent',
-                    minHeight: day.attendants.filter(a => !a.id.startsWith('guest-')).length >
-                      Math.ceil(day.attendants.filter(a => !a.id.startsWith('guest-')).length / 2) ? '100px' : '80px'
+                    minHeight: '80px'
                   }}
                   className={`flex border-b border-gray-300 ${new Date(day.date).toDateString() === new Date().toDateString()
                     ? 'current-day-overlay'
                     : ''
                     }`}
                 >
-                  <div className="flex-[0_0_60px] md:flex-[0_0_80px] p-2 border-r border-gray-300 flex flex-col justify-center">
+                  <div className="flex-[0_0_70px] p-2 border-r border-gray-300 flex flex-col justify-center">
                     <div className="text-lg">{new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}</div>
                     <div className="text-sm text-gray-500">
                       {new Date(day.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
