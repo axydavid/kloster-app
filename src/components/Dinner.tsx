@@ -13,6 +13,7 @@ import cowIcon from '../icons/cow.png';
 import pigIcon from '../icons/pig.png';
 import chickenIcon from '../icons/chicken.png';
 import LongPressModal from './LongPressModal';
+import { UserPlus } from 'lucide-react';
 import fishIcon from '../icons/fish.png';
 import riceBowlIcon from '../icons/rice-bowl.png';
 import potatoIcon from '../icons/potato.png';
@@ -167,7 +168,6 @@ const Dinner: React.FC = () => {
   const contextUsers = useContext(UserContext);
   const [dinnerDays, setDinnerDays] = useState<DinnerDay[]>([]);
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
-  const [guestCount, setGuestCount] = useState<number>(0);
   const [startDate, setStartDate] = useState<Date>(() => new Date());
   const tableHeaderRef = useRef<HTMLDivElement>(null);
   const [isIngredientsPopupOpen, setIsIngredientsPopupOpen] = useState(false);
@@ -845,93 +845,7 @@ const Dinner: React.FC = () => {
                       ) : (
                         <span className="text-base text-gray-400 w-full h-full flex items-center">None</span>
                       )}
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="rounded-full w-8 h-8 md:w-12 md:h-12 p-0 ml-1 flex-shrink-0 flex items-center justify-center"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const guestCount = day.attendants.filter(a => a.id.startsWith('guest-')).length;
-                              setGuestCount(guestCount);
-                            }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                            }}
-                            onTouchStart={(e) => {
-                              e.stopPropagation();
-                            }}
-                            onPointerDown={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            {day.attendants.some(a => a.id.startsWith('guest-')) ? (
-                              <span className="text-gray-500 font-bold text-sm md:text-lg flex items-center justify-center w-full h-full">
-                                {day.attendants.filter(a => a.id.startsWith('guest-')).length}G
-                              </span>
-                            ) : (
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 md:w-6 md:h-6">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                              </svg>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-60" onClick={(e) => e.stopPropagation()}>
-                          <div className="grid gap-4">
-                            <div className="flex justify-between items-center">
-                              <h4 className="font-bold leading-none">Guests</h4>
-                              <button
-                                onClick={() => {
-                                  const popoverTrigger = document.querySelector('[data-state="open"]');
-                                  if (popoverTrigger instanceof HTMLElement) {
-                                    popoverTrigger.click();
-                                  }
-                                }}
-                                className="text-gray-500 hover:text-gray-700 font-bold text-xl"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Input
-                                type="number"
-                                value={guestCount}
-                                onChange={(e) => {
-                                  const newGuestCount = parseInt(e.target.value) || 0;
-                                  setGuestCount(newGuestCount);
-                                }}
-                                onBlur={async () => {
-                                  const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(day.date).getDay());
-                                  const hasNoAttendeesOrCooks = (day.attendants?.length === 0 || !day.attendants) && (day.cooks?.length === 0 || !day.cooks);
-
-                                  if (isSuspendedDay && hasNoAttendeesOrCooks) {
-                                    const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' });
-                                    const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
-                                    if (!confirmed) {
-                                      setGuestCount(0);
-                                      return;
-                                    }
-                                  }
-                                  updateGuestAttendance(day.date, guestCount);
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' || e.key === 'Escape') {
-                                    e.currentTarget.blur();
-                                    const popoverTrigger = document.querySelector('[data-state="open"]');
-                                    if (popoverTrigger instanceof HTMLElement) {
-                                      popoverTrigger.click();
-                                    }
-                                  }
-                                }}
-                                autoFocus
-                                onFocus={(e) => e.target.select()}
-                                min={0}
-                              />
-                            </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
+                      {/* Guest button removed */}
                     </div>
                   </div>
                 </div>
@@ -959,6 +873,12 @@ const Dinner: React.FC = () => {
             setIsLongPressModalOpen(false);
           }
         }}
+        onAddGuests={(guestCount: number) => {
+          if (longPressedDay) {
+            updateGuestAttendance(longPressedDay.date, guestCount);
+          }
+        }}
+        initialGuestCount={longPressedDay ? longPressedDay.attendants.filter(a => a.id.startsWith('guest-')).length : 0}
       />
     </>
   );
