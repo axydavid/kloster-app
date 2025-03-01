@@ -470,8 +470,8 @@ const Dashboard: React.FC = () => {
                         elements.push(
                           <div 
                             key="guests" 
-                            style={{ backgroundColor: '#F59E0B' }}
-                            className="px-3 py-1 rounded-full text-sm font-bold text-white flex items-center gap-1"
+                            style={{ backgroundColor: 'white' }}
+                            className="px-3 py-1 rounded-full text-sm font-bold text-gray-500 flex items-center gap-1 border border-gray-300"
                           >
                             <span>Guests{guestCount > 1 ? ` (${guestCount})` : ''}</span>
                           </div>
