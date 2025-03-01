@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useContext } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -9,6 +9,7 @@ import { calculateWashingCost } from '../utils/washingCost';
 import { supabase } from '../utils/createClient';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from './Layout';
 
 interface Booking {
   id: string;
@@ -43,6 +44,7 @@ const Dashboard: React.FC = () => {
   const [currency, setCurrency] = useState<string>(':-');
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [guestHospitalityFund, setGuestHospitalityFund] = useState<number>(0);
+  const users = useContext(UserContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -417,17 +419,52 @@ const Dashboard: React.FC = () => {
           <CardContent>
             {upcomingDinner ? (
               <>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">Ingredients:</h3>
-                  <span className="text-lg font-semibold">
-                    {calculateBudget(upcomingDinner.attendants || [])} {currency} / {upcomingDinner.attendants ? upcomingDinner.attendants.reduce((total, attendant) => {
-                      if (attendant.id.startsWith('guest-')) {
-                        return total + 1; // Count guests as 1 portion each
-                      }
-                      return total + (Number(attendant.portions) || 0);
-                    }, 0) : 0}
-                    <UserRound size={18} className="inline ml-1 mr-1" strokeWidth={2.5} />
-                  </span>
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-semibold">Attendees:</h3>
+                    <span className="text-lg font-semibold">
+                      {calculateBudget(upcomingDinner.attendants || [])} {currency} / {upcomingDinner.attendants ? upcomingDinner.attendants.reduce((total, attendant) => {
+                        if (attendant.id.startsWith('guest-')) {
+                          return total + 1; // Count guests as 1 portion each
+                        }
+                        return total + (Number(attendant.portions) || 0);
+                      }, 0) : 0}
+                      <UserRound size={18} className="inline ml-1 mr-1" strokeWidth={2.5} />
+                    </span>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {upcomingDinner.attendants && upcomingDinner.attendants.map((attendant) => {
+                      // Find the user in the users context
+                      const user = users?.find(u => u.id === attendant.id);
+                      const isGuest = attendant.id.startsWith('guest-');
+                      
+                      return (
+                        <div 
+                          key={attendant.id} 
+                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${
+                            isGuest ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                          } ${attendant.isTakeAway ? 'border-2 border-dashed border-gray-400' : ''}`}
+                        >
+                          {isGuest ? (
+                            <>
+                              <span>Guest</span>
+                              {attendant.portions > 1 && <span className="ml-1">({attendant.portions})</span>}
+                            </>
+                          ) : (
+                            <>
+                              <span>{user?.raw_user_meta_data?.display_name || 'Unknown'}</span>
+                              {attendant.portions > 1 && <span className="ml-1">({attendant.portions})</span>}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-semibold">Ingredients:</h3>
+                  </div>
                 </div>
                 <ToDo
                   ingredients={upcomingDinner.ingredients}
