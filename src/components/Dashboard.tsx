@@ -446,7 +446,7 @@ const Dashboard: React.FC = () => {
                           style={{ 
                             backgroundColor: isGuest ? '#F59E0B' : userColor,
                           }}
-                          className={`px-3 py-1 rounded-full text-sm font-bold text-white flex items-center
+                          className={`px-3 py-1 rounded-full text-sm font-bold text-white flex items-center gap-1 relative
                           ${attendant.isTakeAway ? 'border-2 border-dashed border-white' : ''}`}
                         >
                           {isGuest ? (
@@ -458,6 +458,11 @@ const Dashboard: React.FC = () => {
                             <>
                               <span>{user?.raw_user_meta_data?.display_name || 'Unknown'}</span>
                               {attendant.portions > 1 && <span className="ml-1">({attendant.portions})</span>}
+                              {attendant.isTakeAway && (
+                                <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm">
+                                  <ShoppingBag size={14} className="text-gray-600" />
+                                </div>
+                              )}
                             </>
                           )}
                         </div>
