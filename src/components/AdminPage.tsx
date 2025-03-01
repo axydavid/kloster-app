@@ -21,6 +21,7 @@ const AdminPage: React.FC = () => {
     currencyType: ':-',
     churchStartHour: 11,
     churchEndHour: 12,
+    churchDay: 6, // Default to Saturday (6)
     suspendedWeekdays: [] as number[]
   });
 
@@ -41,6 +42,7 @@ const AdminPage: React.FC = () => {
         currencyType: data.currency_type,
         churchStartHour: data.church_start_hour,
         churchEndHour: data.church_end_hour,
+        churchDay: data.church_day ?? 6, // Default to Saturday (6) if not set
         suspendedWeekdays: data.suspended_weekdays || []
       });
     }
@@ -57,6 +59,7 @@ const AdminPage: React.FC = () => {
         currency_type: settings.currencyType,
         church_start_hour: settings.churchStartHour,
         church_end_hour: settings.churchEndHour,
+        church_day: settings.churchDay,
         suspended_weekdays: settings.suspendedWeekdays
       })
       .eq('id', 1);
@@ -163,6 +166,26 @@ const AdminPage: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold mb-2">Church Hours</h3>
                 <div className="flex flex-wrap gap-4">
+                  <div>
+                    <Label htmlFor="churchDay">Church Day</Label>
+                    <Select
+                      value={settings.churchDay.toString()}
+                      onValueChange={(value) => setSettings({...settings, churchDay: parseInt(value)})}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select day" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">Sunday</SelectItem>
+                        <SelectItem value="1">Monday</SelectItem>
+                        <SelectItem value="2">Tuesday</SelectItem>
+                        <SelectItem value="3">Wednesday</SelectItem>
+                        <SelectItem value="4">Thursday</SelectItem>
+                        <SelectItem value="5">Friday</SelectItem>
+                        <SelectItem value="6">Saturday</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div>
                     <Label htmlFor="churchStartHour">Church Start Hour</Label>
                     <Input
