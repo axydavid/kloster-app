@@ -46,7 +46,7 @@ const UserTag: React.FC<UserTagProps> = ({
       <span>{displayName}</span>
       {portions > 1 && <span>({portions})</span>}
       {isTakeAway && (
-        <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm">
+        <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1 shadow-md">
           <ShoppingBag size={size === 'small' ? 10 : 14} className="text-gray-600" />
         </div>
       )}
