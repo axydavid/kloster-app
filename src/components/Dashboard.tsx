@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
-import { X, UserRound } from 'lucide-react';
+import { X, UserRound, ShoppingBag } from 'lucide-react';
 import ToDo from './ToDo';
 import { calculateWashingCost } from '../utils/washingCost';
 import { supabase } from '../utils/createClient';
