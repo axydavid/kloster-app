@@ -804,6 +804,7 @@ const Dinner: React.FC = () => {
                         setLongPressedDay(day);
                         setIsLongPressModalOpen(true);
                       }
+                      return false; // Prevent default context menu
                     }}
                     onTouchStart={(e) => {
                       const timer = setTimeout(() => {
