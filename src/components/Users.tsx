@@ -27,6 +27,9 @@ const Users: React.FC = () => {
   const [newUserType, setNewUserType] = useState('user');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  // State for editing user display names
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editedDisplayName, setEditedDisplayName] = useState<string>('');
 
   useEffect(() => {
     const fetchCurrentUserAndAllUsers = async () => {
@@ -44,6 +47,42 @@ const Users: React.FC = () => {
     };
     fetchCurrentUserAndAllUsers();
   }, []);
+
+  const updateUserMetadata = async (userId: string, field: string, value: any) => {
+    if (!isAdmin) {
+      alert('Only admins can update user data');
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('update_user_metadata', {
+        user_id: userId,
+        metadata_field: field,
+        metadata_value: JSON.stringify(value)  // Convert to JSON string
+      });
+
+      if (error) throw error;
+      
+      // Update the local state to reflect the change
+      setUsers(users.map(user => 
+        user.id === userId ? { 
+          ...user, 
+          raw_user_meta_data: { 
+            ...user.raw_user_meta_data, 
+            [field]: value 
+          },
+          // If we're updating the type field, also update the top-level type property
+          ...(field === 'type' ? { type: value } : {})
+        } : user
+      ));
+
+      return true;
+    } catch (error: any) {
+      console.error(`Error updating ${field}:`, error);
+      alert(`Failed to update ${field}. ${error.message || 'Please try again.'}`);
+      return false;
+    }
+  };
 
   const handleDeleteUser = async (userId: string) => {
     if (!isAdmin) {
@@ -116,62 +155,12 @@ const Users: React.FC = () => {
   };
 
   const handleUpdateUserType = async (userId: string, newType: string) => {
-    if (!isAdmin) {
-      alert('Only admins can update user types');
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.rpc('update_user_type', {
-        user_id: userId,
-        new_type: newType
-      });
-
-      if (error) throw error;
-      
-      // Update the local state to reflect the change
-      setUsers(users.map(user => 
-        user.id === userId ? { ...user, type: newType } : user
-      ));
-    } catch (error: any) {
-      console.error('Error updating user type:', error);
-      alert(`Failed to update user type. ${error.message || 'Please try again.'}`);
-    }
+    return updateUserMetadata(userId, 'type', newType);
   };
 
   const handleUpdateDisplayName = async (userId: string, newDisplayName: string) => {
-    if (!isAdmin) {
-      alert('Only admins can update display names');
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.auth.admin.updateUserById(
-        userId,
-        { user_meta: { display_name: newDisplayName } }
-      );
-
-      if (error) throw error;
-      
-      // Update the local state to reflect the change
-      setUsers(users.map(user => 
-        user.id === userId ? { 
-          ...user, 
-          raw_user_meta_: { 
-            ...user.raw_user_meta_data, 
-            display_name: newDisplayName 
-          } 
-        } : user
-      ));
-    } catch (error: any) {
-      console.error('Error updating display name:', error);
-      alert(`Failed to update display name. ${error.message || 'Please try again.'}`);
-    }
+    return updateUserMetadata(userId, 'display_name', newDisplayName);
   };
-
-  // State for editing user display names
-  const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editedDisplayName, setEditedDisplayName] = useState<string>('');
 
   const startEditing = (userId: string, currentName: string = '') => {
     setEditingUserId(userId);
