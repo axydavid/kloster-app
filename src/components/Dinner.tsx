@@ -818,13 +818,14 @@ const Dinner: React.FC = () => {
                             return total + (Number(attendant.portions) || 0);
                           }, 0)}
                         </span>
-                        <div className="flex items-center -space-x-2 h-full overflow-hidden flex-grow">
+                        <div className="flex items-center gap-1 h-full overflow-hidden flex-grow">
                           {day.attendants
                             .filter(attendant => !attendant.id.startsWith('guest-'))
                             .map((attendant) => (
-                              <UserIcon
+                              <UserTag
                                 key={attendant.id}
                                 user={users.find(user => user.id === attendant.id) || { id: attendant.id, raw_user_meta_data: {} }}
+                                portions={attendant.portions}
                                 isTakeAway={attendant.isTakeAway}
                                 showRemoveButton={attendant.id === currentUserId}
                                 onRemove={() => toggleAttendance(day.date, attendant.isTakeAway)}

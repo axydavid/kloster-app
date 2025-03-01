@@ -450,7 +450,7 @@ const Dashboard: React.FC = () => {
                         return (
                           <UserTag
                             key={attendant.id}
-                            user={user || { id: attendant.id, raw_user_meta_ {} }}
+                            user={user || { id: attendant.id, raw_user_meta_data: {} }}
                             portions={attendant.portions}
                             isTakeAway={attendant.isTakeAway}
                           />
