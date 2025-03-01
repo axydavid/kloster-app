@@ -13,6 +13,11 @@ interface LongPressModalProps {
   onTakeAway: (portions: number) => void;
   onAddGuests: (guestCount: number) => void;
   initialGuestCount?: number;
+  currentUserAttendance?: {
+    isAttending: boolean;
+    isTakeAway: boolean;
+    portions: number;
+  };
 }
 
 const LongPressModal: React.FC<LongPressModalProps> = ({
@@ -21,9 +26,10 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
   onJoin,
   onTakeAway,
   onAddGuests,
-  initialGuestCount = 0
+  initialGuestCount = 0,
+  currentUserAttendance
 }) => {
-  const [userPortions, setUserPortions] = useState(1);
+  const [userPortions, setUserPortions] = useState(currentUserAttendance?.portions || 1);
   const [guestCount, setGuestCount] = useState(initialGuestCount);
   const [initialPortionsLoaded, setInitialPortionsLoaded] = useState(false);
 
@@ -94,17 +100,21 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
           <div className="flex space-x-3 mb-5">
             <Button
               onClick={() => onJoin(userPortions)}
-              className="flex-1 bg-blue-500 hover:bg-blue-600"
+              className={`flex-1 ${currentUserAttendance?.isAttending && !currentUserAttendance?.isTakeAway 
+                ? 'bg-blue-700 hover:bg-blue-800' 
+                : 'bg-blue-500 hover:bg-blue-600'}`}
             >
               <Users className="mr-2 h-4 w-4" />
-              Join
+              {currentUserAttendance?.isAttending && !currentUserAttendance?.isTakeAway ? 'Leave' : 'Join'}
             </Button>
             <Button
               onClick={() => onTakeAway(userPortions)}
-              className="flex-1 bg-green-500 hover:bg-green-600"
+              className={`flex-1 ${currentUserAttendance?.isAttending && currentUserAttendance?.isTakeAway 
+                ? 'bg-green-700 hover:bg-green-800' 
+                : 'bg-green-500 hover:bg-green-600'}`}
             >
               <ShoppingBag className="mr-2 h-4 w-4" />
-              Take Away
+              {currentUserAttendance?.isAttending && currentUserAttendance?.isTakeAway ? 'Cancel' : 'Take Away'}
             </Button>
           </div>
 

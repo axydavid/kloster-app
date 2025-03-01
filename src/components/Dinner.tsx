@@ -898,6 +898,11 @@ const Dinner: React.FC = () => {
           }
         }}
         initialGuestCount={longPressedDay ? longPressedDay.attendants.filter(a => a.id.startsWith('guest-')).length : 0}
+        currentUserAttendance={longPressedDay && currentUserId ? {
+          isAttending: longPressedDay.attendants.some(a => a.id === currentUserId),
+          isTakeAway: longPressedDay.attendants.find(a => a.id === currentUserId)?.isTakeAway || false,
+          portions: longPressedDay.attendants.find(a => a.id === currentUserId)?.portions || userPortions
+        } : undefined}
       />
     </>
   );
