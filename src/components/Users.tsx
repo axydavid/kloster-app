@@ -139,6 +139,36 @@ const Users: React.FC = () => {
     }
   };
 
+  const handleUpdateDisplayName = async (userId: string, newDisplayName: string) => {
+    if (!isAdmin) {
+      alert('Only admins can update display names');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.admin.updateUserById(
+        userId,
+        { user_meta { display_name: newDisplayName } }
+      );
+
+      if (error) throw error;
+      
+      // Update the local state to reflect the change
+      setUsers(users.map(user => 
+        user.id === userId ? { 
+          ...user, 
+          raw_user_meta_ { 
+            ...user.raw_user_meta_data, 
+            display_name: newDisplayName 
+          } 
+        } : user
+      ));
+    } catch (error: any) {
+      console.error('Error updating display name:', error);
+      alert(`Failed to update display name. ${error.message || 'Please try again.'}`);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <form onSubmit={handleAddUser} className="flex items-end space-x-2 mb-4">
@@ -187,34 +217,77 @@ const Users: React.FC = () => {
         <Button type="submit">Add User</Button>
       </form>
       
-      {users.map((user: UserData) => (
-        <div key={user.id} className="flex items-center justify-between mb-4 p-2 border-b">
-          <div className="flex items-center">
-            <UserIcon user={user} size="small" />
-            <span className="ml-2">{user.raw_user_meta_data?.display_name || user.email}</span>
+      {users.map((user: UserData) => {
+        const [editingName, setEditingName] = useState(false);
+        const [newDisplayName, setNewDisplayName] = useState(user.raw_user_meta_data?.display_name || '');
+        
+        return (
+          <div key={user.id} className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 p-2 border-b">
+            <div className="flex items-center mb-2 sm:mb-0">
+              <UserIcon user={user} size="small" />
+              {editingName ? (
+                <div className="ml-2 flex items-center">
+                  <Input
+                    value={newDisplayName}
+                    onChange={(e) => setNewDisplayName(e.target.value)}
+                    className="w-[150px] mr-2"
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      handleUpdateDisplayName(user.id, newDisplayName);
+                      setEditingName(false);
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setEditingName(false)}
+                    className="ml-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <div className="ml-2">
+                  <span className="font-medium">{user.raw_user_meta_data?.display_name || 'No display name'}</span>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={() => setEditingName(true)}
+                    className="ml-1 h-6 px-2"
+                  >
+                    Edit
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="text-sm text-gray-500">{user.email}</div>
+              <Select 
+                value={user.type} 
+                onValueChange={(newType) => handleUpdateUserType(user.id, newType)}
+              >
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button 
+                variant="destructive" 
+                onClick={() => handleDeleteUser(user.id)}
+              >
+                Delete
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Select 
-              value={user.type} 
-              onValueChange={(newType) => handleUpdateUserType(user.id, newType)}
-            >
-              <SelectTrigger className="w-[100px]">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">User</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button 
-              variant="destructive" 
-              onClick={() => handleDeleteUser(user.id)}
-            >
-              Delete
-            </Button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
