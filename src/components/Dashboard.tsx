@@ -452,12 +452,12 @@ const Dashboard: React.FC = () => {
                           {isGuest ? (
                             <>
                               <span>Guest</span>
-                              {attendant.portions > 1 && <span className="ml-1">({attendant.portions})</span>}
+                              {attendant.portions > 1 && <span className="">({attendant.portions})</span>}
                             </>
                           ) : (
                             <>
                               <span>{user?.raw_user_meta_data?.display_name || 'Unknown'}</span>
-                              {attendant.portions > 1 && <span className="ml-1">({attendant.portions})</span>}
+                              {attendant.portions > 1 && <span className="">({attendant.portions})</span>}
                               {attendant.isTakeAway && (
                                 <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm">
                                   <ShoppingBag size={14} className="text-gray-600" />
