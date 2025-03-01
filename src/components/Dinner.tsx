@@ -641,7 +641,8 @@ const Dinner: React.FC = () => {
                   backgroundColor: isDaySuspended(new Date(day.date))
                     ? 'rgba(229, 231, 235, 0.7)' // Lighter gray with transparency
                     : 'transparent',
-                  minHeight: '80px'
+                  minHeight: day.attendants.filter(a => !a.id.startsWith('guest-')).length > 
+                    Math.ceil(day.attendants.filter(a => !a.id.startsWith('guest-')).length / 2) ? '100px' : '80px'
                 }}
                 className={`flex border-b border-gray-300 ${new Date(day.date).toDateString() === new Date().toDateString()
                   ? 'current-day-overlay'
