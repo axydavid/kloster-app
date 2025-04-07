@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
-import { Utensils } from 'lucide-react';
+import { Utensils, Lock } from 'lucide-react';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -64,7 +64,10 @@ const UserSettings: React.FC = () => {
   });
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({ suspendedWeekdays: [] });
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   useEffect(() => {
@@ -336,10 +339,241 @@ const UserSettings: React.FC = () => {
     await handleSubmit(e);
   };
 
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setToast({ message: 'Passwords do not match.', type: 'error' });
+      setTimeout(() => setToast(null), 5000);
+      return;
+    }
+    if (newPassword.length < 6) {
+      setToast({ message: 'Password must be at least 6 characters long.', type: 'error' });
+      setTimeout(() => setToast(null), 5000);
+      return;
+    }
+
+    setIsPasswordSubmitting(true);
+    setToast({ message: 'Updating password...', type: 'loading' });
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+
+      setToast({ message: 'Password updated successfully!', type: 'success' });
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setToast(null), 5000);
+    } catch (error) {
+      console.error('Error updating password:', error);
+      setToast({ message: 'Error updating password. Please try again.', type: 'error' });
+      setTimeout(() => setToast(null), 5000);
+    } finally {
+      setIsPasswordSubmitting(false);
+    }
+  };
+
+
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>User Settings</CardTitle>
+    <div className="max-w-2xl mx-auto space-y-6">
+      {toast && (
+        <div className="fixed top-4 right-4 z-50">
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        </div>
+      )}
+      <Card>
+        <CardHeader>
+          <CardTitle>User Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Keep existing form content here, remove toast from inside */}
+            <div className="flex flex-wrap -mx-2">
+              {/* Display Name and Icon Color inputs */}
+              <div className="w-full sm:w-1/2 px-2 mb-4">
+                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">Display Name</label>
+                <Input
+                  type="text"
+                  id="displayName"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="mt-1 w-full"
+                />
+              </div>
+              <div className="w-full sm:w-1/2 px-2 mb-4">
+                <label htmlFor="iconColor" className="block text-sm font-medium text-gray-700">Icon Color</label>
+                <Popover open={isColorPopoverOpen} onOpenChange={setIsColorPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      className="mt-1 w-full"
+                      style={{ backgroundColor: iconColor, color: 'white' }}
+                    >
+                      {presetColors.find(color => color.hex === iconColor)?.name || iconColor}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 max-w-md">
+                    <div className="grid grid-cols-4 gap-2">
+                      {presetColors.map((color) => (
+                        <Button
+                          key={color.hex}
+                          type="button"
+                          className="w-10 h-10"
+                          style={{ backgroundColor: color.hex }}
+                          onClick={() => {
+                            setIconColor(color.hex);
+                            setIsColorPopoverOpen(false);
+                          }}
+                          title={color.name}
+                        />
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              {/* Default Portions input */}
+              <div className="w-full sm:w-1/2 px-2 mb-4">
+                <label htmlFor="portions" className="block text-sm font-medium text-gray-700">Default Portions</label>
+                <Input
+                  type="number"
+                  id="portions"
+                  value={portions}
+                  onChange={(e) => setPortions(e.target.value)}
+                  min="0"
+                  step="0.5"
+                  className="mt-1 w-full"
+                />
+              </div>
+            </div>
+
+            {/* Join Dinners section */}
+            <div className="space-y-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div
+                  className="bg-secondary p-4 rounded-lg shadow-sm cursor-pointer select-none flex-1"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setJoinDinners(!joinDinners);
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="joinDinners" className="text-lg font-semibold cursor-pointer"
+                      onMouseDown={(e) => e.preventDefault()}>Join Dinners</Label>
+                    <Checkbox
+                      id="joinDinners"
+                      checked={joinDinners}
+                      onCheckedChange={(checked) => handleJoinDinnersChange(checked as boolean)}
+                      onClick={(e) => e.preventDefault()}
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground">Enable to join community dinners</p>
+                  {joinDinners && (
+                    <div className="mt-4">
+                      <div>
+                        <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Auto Response</Label>
+                        <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
+                          {weekdays.map((day, index) => {
+                            const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
+                            return (
+                              <div key={day} className="flex flex-col items-center" onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className={`flex flex-col items-center justify-center h-24 p-2 w-full ${isSuspended
+                                    ? 'bg-gray-300 cursor-not-allowed'
+                                    : dinnerDays[day].status === 'always'
+                                      ? 'bg-green-100 hover:bg-green-200'
+                                      : dinnerDays[day].status === 'never'
+                                        ? 'bg-red-100 hover:bg-red-200'
+                                        : dinnerDays[day].status === 'takeaway'
+                                          ? 'bg-yellow-100 hover:bg-yellow-200'
+                                          : 'bg-gray-100 hover:bg-gray-200'
+                                    }`}
+                                  onMouseDown={(e) => {
+                                    // Only respond to left clicks (button === 0)
+                                    if (e.button === 0 && !isSuspended) {
+                                      const currentValue = dinnerDays[day].status;
+                                      const newValue =
+                                        currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
+                                      handleDinnerDayChange(day, newValue, isSuspended);
+                                    }
+                                  }}
+                                  disabled={isSuspended}
+                                >
+                                  <span className="text-sm font-medium">{day.slice(0, 3)}</span>
+                                  <span className="text-xs text-muted-foreground mt-1">
+                                    {isSuspended
+                                      ? 'Suspended'
+                                      : dinnerDays[day].status === 'always'
+                                        ? 'Always'
+                                        : dinnerDays[day].status === 'takeaway'
+                                          ? 'Take Away'
+                                          : 'Never'}
+                                  </span>
+                                  {!isSuspended && dinnerDays[day].status !== 'never' && (
+                                    <div
+                                      className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1"
+                                      onClick={(e) => e.stopPropagation()}
+                                      onMouseDown={(e) => e.stopPropagation()}
+                                    >
+                                      <Utensils className="text-gray-500 w-4 h-4 mr-1 shrink-0" />
+                                      <input
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="[0-9]*\.?[0-9]*"
+                                        value={dinnerDays[day].portions}
+                                        onChange={(e) => {
+                                          e.stopPropagation();
+                                          const value = e.target.value.replace(/[^0-9.]/g, '');
+                                          handlePortionChange(day, value);
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          (e.target as HTMLInputElement).select();
+                                        }}
+                                        onMouseDown={(e) => {
+                                          e.stopPropagation(); // Prevent triggering the parent button
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault(); // Prevent form submission
+                                            e.stopPropagation();
+                                          }
+                                        }}
+                                        className="w-full p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-gray-500"
+                                      />
+                                    </div>
+                                  )}
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Settings'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* New Password Change Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Change Password</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -355,178 +589,35 @@ const UserSettings: React.FC = () => {
               <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">Display Name</label>
               <Input
                 type="text"
-                id="displayName"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="mt-1 w-full"
-              />
-            </div>
-            <div className="w-full sm:w-1/2 px-2 mb-4">
-              <label htmlFor="iconColor" className="block text-sm font-medium text-gray-700">Icon Color</label>
-              <Popover open={isColorPopoverOpen} onOpenChange={setIsColorPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    className="mt-1 w-full"
-                    style={{ backgroundColor: iconColor, color: 'white' }}
-                  >
-                    {presetColors.find(color => color.hex === iconColor)?.name || iconColor}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 max-w-md">
-                  <div className="grid grid-cols-4 gap-2">
-                    {presetColors.map((color) => (
-                      <Button
-                        key={color.hex}
-                        type="button"
-                        className="w-10 h-10"
-                        style={{ backgroundColor: color.hex }}
-                        onClick={() => {
-                          setIconColor(color.hex);
-                          setIsColorPopoverOpen(false);
-                        }}
-                        title={color.name}
-                      />
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="w-full sm:w-1/2 px-2 mb-4">
-              <label htmlFor="portions" className="block text-sm font-medium text-gray-700">Default Portions</label>
               <Input
-                type="number"
-                id="portions"
-                value={portions}
-                onChange={(e) => setPortions(e.target.value)}
-                min="0"
-                step="0.5"
+                type="password"
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
                 className="mt-1 w-full"
+                placeholder="Enter new password (min 6 chars)"
+                required
               />
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div
-                className="bg-secondary p-4 rounded-lg shadow-sm cursor-pointer select-none flex-1"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setJoinDinners(!joinDinners);
-                }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="joinDinners" className="text-lg font-semibold cursor-pointer"
-                    onMouseDown={(e) => e.preventDefault()}>Join Dinners</Label>
-                  <Checkbox
-                    id="joinDinners"
-                    checked={joinDinners}
-                    onCheckedChange={(checked) => handleJoinDinnersChange(checked as boolean)}
-                    onClick={(e) => e.preventDefault()}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground">Enable to join community dinners</p>
-                {joinDinners && (
-                  <div className="mt-4">
-                    <div>
-                      <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Auto Response</Label>
-                      <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
-                        {weekdays.map((day, index) => {
-                          const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
-                          return (
-                            <div key={day} className="flex flex-col items-center" onMouseDown={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className={`flex flex-col items-center justify-center h-24 p-2 w-full ${isSuspended
-                                  ? 'bg-gray-300 cursor-not-allowed'
-                                  : dinnerDays[day].status === 'always'
-                                    ? 'bg-green-100 hover:bg-green-200'
-                                    : dinnerDays[day].status === 'never'
-                                      ? 'bg-red-100 hover:bg-red-200'
-                                      : dinnerDays[day].status === 'takeaway'
-                                        ? 'bg-yellow-100 hover:bg-yellow-200'
-                                        : 'bg-gray-100 hover:bg-gray-200'
-                                  }`}
-                                onMouseDown={(e) => {
-                                  // Only respond to left clicks (button === 0)
-                                  if (e.button === 0 && !isSuspended) {
-                                    const currentValue = dinnerDays[day].status;
-                                    const newValue =
-                                      currentValue === 'always' ? 'takeaway' : currentValue === 'takeaway' ? 'never' : 'always';
-                                    handleDinnerDayChange(day, newValue, isSuspended);
-                                  }
-                                }}
-                                disabled={isSuspended}
-                              >
-                                <span className="text-sm font-medium">{day.slice(0, 3)}</span>
-                                <span className="text-xs text-muted-foreground mt-1">
-                                  {isSuspended
-                                    ? 'Suspended'
-                                    : dinnerDays[day].status === 'always'
-                                      ? 'Always'
-                                      : dinnerDays[day].status === 'takeaway'
-                                        ? 'Take Away'
-                                        : 'Never'}
-                                </span>
-                                {!isSuspended && dinnerDays[day].status !== 'never' && (
-                                  <div
-                                    className="flex items-center mt-2 bg-gray-200 bg-opacity-50 rounded p-1"
-                                    onClick={(e) => e.stopPropagation()}
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                  >
-                                    <Utensils className="text-gray-500 w-4 h-4 mr-1 shrink-0" />
-                                    <input
-                                      type="text"
-                                      inputMode="decimal"
-                                      pattern="[0-9]*\.?[0-9]*"
-                                      value={dinnerDays[day].portions}
-                                      onChange={(e) => {
-                                        e.stopPropagation();
-                                        const value = e.target.value.replace(/[^0-9.]/g, '');
-                                        handlePortionChange(day, value);
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        (e.target as HTMLInputElement).select();
-                                      }}
-                                      onMouseDown={(e) => {
-                                        e.stopPropagation(); // Prevent triggering the parent button
-                                      }}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          e.preventDefault(); // Prevent form submission
-                                          e.stopPropagation();
-                                        }
-                                      }}
-                                      className="w-full p-1 text-center bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none font-bold text-gray-500"
-                                    />
-                                  </div>
-                                )}
-                              </Button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+            <div>
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mt-1 w-full"
+                placeholder="Confirm new password"
+                required
+              />
             </div>
-          </div>
-
-
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Settings'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            <Button type="submit" className="w-full" disabled={isPasswordSubmitting}>
+              {isPasswordSubmitting ? 'Updating...' : 'Update Password'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
