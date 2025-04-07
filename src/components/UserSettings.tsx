@@ -576,19 +576,9 @@ const UserSettings: React.FC = () => {
           <CardTitle>Change Password</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {toast && (
-            <Toast
-              message={toast.message}
-              type={toast.type}
-              onClose={() => setToast(null)}
-            />
-          )}
-          <div className="flex flex-wrap -mx-2">
-            <div className="w-full sm:w-1/2 px-2 mb-4">
-              <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">Display Name</label>
-              <Input
-                type="text"
+        <form onSubmit={handlePasswordUpdate} className="space-y-4">
+            <div>
+              <Label htmlFor="newPassword">New Password</Label>
               <Input
                 type="password"
                 id="newPassword"
