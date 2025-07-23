@@ -25,9 +25,9 @@ Deno.serve(async (req) => {
         { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const { data: { user: callingUser }, error: userError } = await supabase.auth.getUser()
 
-    if (userError || !user) {
+    if (userError || !callingUser) {
       console.error('User not found or auth error:', userError);
       return new Response(JSON.stringify({ error: 'Authentication error: Could not get user.' }), {
         status: 401,
@@ -35,7 +35,24 @@ Deno.serve(async (req) => {
       })
     }
 
-    const userId = user.id;
+    const { userIdToDelete } = await req.json().catch(() => ({ userIdToDelete: null }));
+    let userId: string;
+
+    if (userIdToDelete) {
+      // Admin is trying to delete another user.
+      // First, verify the calling user is an admin.
+      const { data: adminData, error: adminError } = await supabaseAdmin.auth.admin.getUserById(callingUser.id);
+      if (adminError || adminData.user.user_metadata?.type !== 'admin') {
+        return new Response(JSON.stringify({ error: 'Forbidden: Not authorized to delete other users.' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      userId = userIdToDelete;
+    } else {
+      // User is deleting their own account.
+      userId = callingUser.id;
+    }
 
     // 1. Remove user from all future dinner_days as a cook
     const { error: dinnerCookError } = await supabaseAdmin.rpc('remove_user_from_all_future_cooks', { p_user_id: userId });

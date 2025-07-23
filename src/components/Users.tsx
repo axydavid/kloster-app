@@ -91,15 +91,32 @@ const Users: React.FC = () => {
       return;
     }
 
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm('Are you sure you want to delete this user? This will remove them from all future dinners and delete their account permanently.')) {
       try {
-        const { error } = await supabase.rpc('delete_user', { user_id: userId });
+        const { error } = await supabase.functions.invoke('delete-user-account', {
+          body: { userIdToDelete: userId },
+        });
 
-        if (error) throw error;
+        if (error) {
+          let errorMessage = error.message;
+          try {
+            const errorBody = await (error.context as any).json();
+            if (errorBody.error) {
+              errorMessage = errorBody.error;
+            } else if (errorBody.details) {
+              errorMessage = errorBody.details;
+            }
+          } catch (e) {
+            // Ignore parsing error
+          }
+          throw new Error(errorMessage);
+        }
+
         setUsers(users.filter(user => user.id !== userId));
-      } catch (error) {
+        alert('User deleted successfully.');
+      } catch (error: any) {
         console.error('Error deleting user:', error);
-        alert('Failed to delete user. Please try again.');
+        alert(`Failed to delete user: ${error.message}`);
       }
     }
   };
