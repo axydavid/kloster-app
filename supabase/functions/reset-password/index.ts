@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       userId,
       { password: newPassword }
     )
-
+    
     if (updateError) {
       return new Response(
         JSON.stringify({ error: 'Failed to update password', details: updateError.message }),
