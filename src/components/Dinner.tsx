@@ -833,7 +833,7 @@ const Dinner: React.FC = () => {
                         const endTime = new Date().getTime();
                         if (endTime - startTime < 500) {
                           // Get current attendance status
-                          const currentAttendant = day.attendants.find(a => a.id === currentUserId);
+                          const currentAttendant = (day.attendants || []).find(a => a.id === currentUserId);
                           // Toggle attendance (add if not present, remove if present)
                           toggleAttendance(day.date, false, userPortions);
                         }
@@ -872,7 +872,7 @@ const Dinner: React.FC = () => {
                     }}
                   >
                     <div className="w-full h-full flex items-center justify-between">
-                      {day.attendants.length > 0 ? (
+                      {day.attendants && day.attendants.length > 0 ? (
                         <div className="flex items-center w-full h-full">
                           <span className="mr-2 px-2 py-1 text-sm font-bold bg-gray-100 rounded">
                             {day.attendants.reduce((total, attendant) => {
@@ -951,11 +951,11 @@ const Dinner: React.FC = () => {
             setIsLongPressModalOpen(false);
           }
         }}
-        initialGuestCount={longPressedDay ? longPressedDay.attendants.filter(a => a.id.startsWith('guest-')).length : 0}
+        initialGuestCount={longPressedDay ? (longPressedDay.attendants || []).filter(a => a.id.startsWith('guest-')).length : 0}
         currentUserAttendance={longPressedDay && currentUserId ? {
-          isAttending: longPressedDay.attendants.some(a => a.id === currentUserId),
-          isTakeAway: longPressedDay.attendants.find(a => a.id === currentUserId)?.isTakeAway || false,
-          portions: longPressedDay.attendants.find(a => a.id === currentUserId)?.portions || userPortions
+          isAttending: (longPressedDay.attendants || []).some(a => a.id === currentUserId),
+          isTakeAway: (longPressedDay.attendants || []).find(a => a.id === currentUserId)?.isTakeAway || false,
+          portions: (longPressedDay.attendants || []).find(a => a.id === currentUserId)?.portions || userPortions
         } : undefined}
       />
     </>
