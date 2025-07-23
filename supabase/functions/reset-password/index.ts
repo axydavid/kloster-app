@@ -38,7 +38,16 @@ Deno.serve(async (req) => {
     const { data: userId, error: rpcError } = await supabase
       .rpc('get_user_id_by_email', { user_email: email });
 
-    if (rpcError || !userId) {
+    if (rpcError) {
+      console.error('RPC Error getting user ID by email:', rpcError);
+      return new Response(JSON.stringify({ error: 'An error occurred while searching for the user.', details: rpcError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!userId) {
+      console.log(`User not found via RPC for email: ${email}`);
       return new Response(JSON.stringify({ error: 'User not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
