@@ -34,21 +34,20 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Find the user by email using the admin API
-    const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({ email });
+    // Find the user by email using a custom RPC function
+    const { data: userId, error: rpcError } = await supabase
+      .rpc('get_user_id_by_email', { user_email: email });
 
-    if (listError || !users || users.length === 0) {
+    if (rpcError || !userId) {
       return new Response(JSON.stringify({ error: 'User not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
-    
-    const user = users[0];
 
     // Update the user's password using the admin API
     const { error: updateError } = await supabase.auth.admin.updateUserById(
-      user.id,
+      userId,
       { password: newPassword }
     )
 
