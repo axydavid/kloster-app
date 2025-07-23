@@ -376,10 +376,7 @@ const UserSettings: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
-    const confirmation = window.prompt('This action is irreversible and will delete all your data. To confirm, please type "DELETE" in the box below.');
-    if (confirmation !== 'DELETE') {
-      setToast({ message: 'Account deletion cancelled.', type: 'success' });
-      setTimeout(() => setToast(null), 5000);
+    if (!window.confirm('Are you sure you want to delete your account? This will permanently remove all your data, including dinner participation, washing reservations, and budget history. This action cannot be undone.')) {
       return;
     }
 
