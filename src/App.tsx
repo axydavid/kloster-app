@@ -14,6 +14,7 @@ import GuestHospitality from './components/GuestHospitality';
 import Users from './components/Users';
 import Accounting from './components/Accounting';
 import GuestRoom from './components/GuestRoom';
+import ForgotPassword from './components/ForgotPassword';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -51,6 +52,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={!session ? <Login /> : <Navigate to="/dashboard" />} />
+        <Route path="/forgot-password" element={!session ? <ForgotPassword /> : <Navigate to="/dashboard" />} />
         <Route element={<Layout session={session} isAdmin={isAdmin} />}>
           <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/login" />} />
           <Route path="/dinner" element={session ? <Dinner /> : <Navigate to="/login" />} />

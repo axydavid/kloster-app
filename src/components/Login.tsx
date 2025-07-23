@@ -116,10 +116,15 @@ const Login: React.FC = () => {
               <input type="submit" style={{ display: 'none' }} />
             </form>
           </CardContent>
-          <CardFooter className="flex justify-between">
+          <CardFooter className="flex justify-between items-center">
             <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/80" onClick={() => setIsSignUp(!isSignUp)}>
               {isSignUp ? 'Switch to Login' : 'Switch to Sign Up'}
             </Button>
+            {!isSignUp && (
+              <Link to="/forgot-password" className="text-sm text-blue-500 hover:underline">
+                Forgot Password?
+              </Link>
+            )}
             <Button onClick={handleAuth}>{isSignUp ? 'Sign Up' : 'Login'}</Button>
           </CardFooter>
         </Card>
