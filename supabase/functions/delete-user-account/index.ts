@@ -45,14 +45,7 @@ Deno.serve(async (req) => {
     const { error: dinnerAttendantError } = await supabaseAdmin.rpc('remove_user_from_all_future_dinners', { p_user_id: userId });
     if (dinnerAttendantError) throw new Error(`Failed to remove user from dinner attendants: ${dinnerAttendantError.message}`);
 
-    // 3. Delete budget entries
-    const { error: budgetError } = await supabaseAdmin
-      .from('budget')
-      .delete()
-      .eq('user_id', userId);
-    if (budgetError) throw new Error(`Failed to delete budget entries: ${budgetError.message}`);
-
-    // 4. Delete the user from auth.users
+    // 3. Delete the user from auth.users
     const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (deleteUserError) throw new Error(`Failed to delete user: ${deleteUserError.message}`);
 

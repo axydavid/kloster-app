@@ -376,7 +376,7 @@ const UserSettings: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you sure you want to delete your account? This will permanently remove all your data, including dinner participation, washing reservations, and budget history. This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete your account? This will permanently remove all your data, including dinner participation. This action cannot be undone.')) {
       return;
     }
 
@@ -659,7 +659,7 @@ const UserSettings: React.FC = () => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Permanently delete your account and all associated data. This includes your profile, dinner participation, washing reservations, and budget history. This action cannot be undone.
+            Permanently delete your account and all associated data. This includes your profile and dinner participation. This action cannot be undone.
           </p>
           <Button
             variant="destructive"
