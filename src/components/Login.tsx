@@ -121,7 +121,7 @@ const Login: React.FC = () => {
           </CardContent>
           <CardFooter className="flex justify-between items-center">
             <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/80" onClick={() => setIsSignUp(!isSignUp)}>
-              {isSignUp ? 'Switch to Login' : 'Switch to Sign Up'}
+              {isSignUp ? 'Back to Login' : 'Sign Up'}
             </Button>
             {!isSignUp && (
               <Link to="/forgot-password" className="text-sm text-blue-500 hover:underline">
