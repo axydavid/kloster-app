@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import Toast, { ToastType } from './Toast';
@@ -47,6 +48,7 @@ const presetColors = [
 ];
 
 const UserSettings: React.FC = () => {
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
   const [iconColor, setIconColor] = useState('#007bff');
   const [portions, setPortions] = useState('1');
@@ -65,6 +67,7 @@ const UserSettings: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({ suspendedWeekdays: [] });
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -372,6 +375,50 @@ const UserSettings: React.FC = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    const confirmation = window.prompt('This action is irreversible and will delete all your data. To confirm, please type "DELETE" in the box below.');
+    if (confirmation !== 'DELETE') {
+      setToast({ message: 'Account deletion cancelled.', type: 'success' });
+      setTimeout(() => setToast(null), 5000);
+      return;
+    }
+
+    setIsDeleting(true);
+    setToast({ message: 'Deleting your account...', type: 'loading' });
+
+    try {
+      const { error } = await supabase.functions.invoke('delete-user-account');
+
+      if (error) {
+        let errorMessage = error.message;
+        try {
+          // Supabase function errors sometimes hide details in the context
+          const errorBody = await (error.context as any).json();
+          if (errorBody.error) {
+            errorMessage = errorBody.error;
+          } else if (errorBody.details) {
+            errorMessage = errorBody.details;
+          }
+        } catch (e) {
+          // Ignore parsing error, use default message
+        }
+        throw new Error(errorMessage);
+      }
+
+      setToast({ message: 'Account deleted successfully.', type: 'success' });
+      await supabase.auth.signOut();
+      // Redirect to login page with a message
+      navigate('/login', { state: { message: 'Your account has been successfully deleted.' } });
+
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      setToast({ message: `Error deleting account: ${error.message}`, type: 'error' });
+      setTimeout(() => setToast(null), 5000);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -605,6 +652,26 @@ const UserSettings: React.FC = () => {
               {isPasswordSubmitting ? 'Updating...' : 'Update Password'}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Delete Account Card */}
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">Delete Account</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Permanently delete your account and all associated data. This includes your profile, dinner participation, washing reservations, and budget history. This action cannot be undone.
+          </p>
+          <Button
+            variant="destructive"
+            className="w-full"
+            onClick={handleDeleteAccount}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete My Account'}
+          </Button>
         </CardContent>
       </Card>
     </div>
