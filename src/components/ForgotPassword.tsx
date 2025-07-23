@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -9,16 +9,15 @@ import { ReactComponent as Logo } from '../icons/logo.svg';
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [logoColor, setLogoColor] = useState('#000000');
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setMessage('');
 
     if (!email || !newPassword) {
       setError("Email and new password are required.");
@@ -44,11 +43,7 @@ const ForgotPassword = () => {
         return;
       }
       
-      if (data?.message) {
-        setMessage(data.message);
-      } else {
-        setMessage('Password has been reset successfully. You can now log in with your new password.');
-      }
+      navigate('/login', { state: { message: 'Password has been reset successfully. You can now log in with your new password.' } });
 
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -96,7 +91,6 @@ const ForgotPassword = () => {
               </div>
               <input type="submit" style={{ display: 'none' }} />
             </form>
-            {message && <p className="text-green-500 mt-4">{message}</p>}
             {error && <p className="text-red-500 mt-4">{error}</p>}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">

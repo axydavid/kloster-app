@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
@@ -9,12 +9,14 @@ import { ReactComponent as Logo } from '../icons/logo.svg';
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
 const Login: React.FC = () => {
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const [logoColor, setLogoColor] = useState('#000000'); // Default color for the logo
+  const [message, setMessage] = useState(location.state?.message || '');
 
   useEffect(() => {
     const checkSession = async () => {
@@ -78,6 +80,7 @@ const Login: React.FC = () => {
             <CardDescription>Enter your credentials to continue</CardDescription>
           </CardHeader>
           <CardContent>
+            {message && <p className="text-green-500 mb-4 text-center">{message}</p>}
             <form onSubmit={handleAuth}>
               <div className="grid w-full items-center gap-4">
                 {isSignUp && (
