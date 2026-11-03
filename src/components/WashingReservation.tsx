@@ -852,7 +852,7 @@ const WashingReservation: React.FC = () => {
               className="h-full hide-allday-cell"
               style={{ height: 'calc(100% - 40px)' }}
               min={new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), washingStartHour, 0, 0)}
-              max={new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), Math.max(washingStartHour, washingEndHour - 1), 0, 0)}
+              max={new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), Math.max(washingStartHour, washingEndHour - 1), 59, 0)}
               date={currentDate}
               onNavigate={(date) => setCurrentDate(date)}
               eventPropGetter={(event) => {
