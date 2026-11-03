@@ -6,7 +6,6 @@ import { Input } from "./ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import UserIcon from './UserIcon';
 import UserTag from './UserTag';
-import { useMediaQuery } from '../hooks/useMediaQuery';
 import { UserContext } from './Layout';
 import { useNavigate } from 'react-router-dom';
 import cowIcon from '../icons/cow.png';
@@ -166,20 +165,13 @@ const Dinner: React.FC = () => {
   useEffect(() => {
     fetchAdminSettings();
   }, []);
-  const fixedHeaderStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: '100%',
-    boxSizing: 'border-box',
-  };
   const [dinnerDays, setDinnerDays] = useState<DinnerDay[]>([]);
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date>(() => new Date());
-  const tableHeaderRef = useRef<HTMLDivElement>(null);
   const [isIngredientsPopupOpen, setIsIngredientsPopupOpen] = useState(false);
   const [longPressedDay, setLongPressedDay] = useState<DinnerDay | null>(null);
   const [isLongPressModalOpen, setIsLongPressModalOpen] = useState(false);
   const [userPortions, setUserPortions] = useState(1);
-  const isMobile = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     if (currentUserId) {
@@ -213,34 +205,6 @@ const Dinner: React.FC = () => {
   useEffect(() => {
     fetchDinnerDays();
   }, [startDate]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (tableHeaderRef.current) {
-        const cardContent = tableHeaderRef.current.closest('.card-content');
-        const cardContentTop = cardContent ? cardContent.getBoundingClientRect().top : 0;
-        if (window.scrollY > cardContentTop) {
-          tableHeaderRef.current.classList.add('fixed', 'top-0', 'z-10', 'border-x');
-          if (isMobile) {
-            tableHeaderRef.current.classList.add('left-0');
-            tableHeaderRef.current.classList.remove('left-4');
-            tableHeaderRef.current.style.width = '100%';
-          } else {
-            tableHeaderRef.current.classList.add('left-4');
-            tableHeaderRef.current.classList.remove('left-0');
-            tableHeaderRef.current.style.width = 'calc(100% - 2rem)';
-          }
-        } else {
-          tableHeaderRef.current.classList.remove('fixed', 'top-0', 'left-0', 'left-4', 'z-10', 'border-x');
-          tableHeaderRef.current.style.width = '100%';
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Call once to set initial state
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isMobile]);
 
   useEffect(() => {
     if (!hasScrolledToCurrentDay.current && dinnerDays.length > 0) {
@@ -683,7 +647,7 @@ const Dinner: React.FC = () => {
 
   return (
     <>
-      <Card className="overflow-x-auto">
+      <Card>
         <CardHeader className="card-header">
           <div className="flex justify-between items-center">
             <CardTitle>Dinner</CardTitle>
@@ -700,7 +664,7 @@ const Dinner: React.FC = () => {
         </CardHeader>
         <CardContent className="p-0 card-content">
           <div className="flex flex-col">
-            <div ref={tableHeaderRef} className="flex bg-gray-100 font-bold border-t border-gray-300" style={fixedHeaderStyle}>
+            <div className="sticky top-14 z-40 flex bg-gray-100 font-bold border-t border-gray-300">
               <div className="flex-[0_0_70px] p-2 border-b border-r border-gray-300">Day</div>
               <div className="flex-[0_0_100px] md:flex-[0_0_130px] p-2 border-b border-r border-gray-300">Chef</div>
               <div className="hidden md:block flex-1 p-2 border-b border-r border-gray-300">Ingredients</div>

@@ -29,7 +29,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ session, isAdmin }) => {
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover modal={false} open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <div className="cursor-pointer">
           <UserIcon user={user} size="normal" />
@@ -37,7 +37,15 @@ const UserMenu: React.FC<UserMenuProps> = ({ session, isAdmin }) => {
       </PopoverTrigger>
       <PopoverContent className="w-40 p-0">
         <div className="flex flex-col">
-          <Button variant="ghost" asChild className="justify-start" onClick={() => setIsOpen(false)}>
+          <Button
+            variant="ghost"
+            asChild
+            className="justify-start"
+            onClick={() => {
+              setIsOpen(false);
+              document.body.style.pointerEvents = '';
+            }}
+          >
             <Link to="/settings" className="flex items-center w-full px-2 py-1.5">
               <Settings className="mr-2 h-4 w-4" />
               Settings

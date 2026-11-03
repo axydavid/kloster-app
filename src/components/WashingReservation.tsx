@@ -15,7 +15,7 @@ import { X, CalendarIcon, Clock } from 'lucide-react';
 import { calculateWashingCost } from '../utils/washingCost';
 import { supabase } from '../utils/createClient';
 import { calendarLocalizer } from '../utils/calendarLocalizer';
-import { clampWashingRange, contrastTextColor, mergeAdjacentWashingEvents, WashingCalendarEvent } from '../utils/washingEvents';
+import { clampWashingRange, contrastTextColor, getWashingConfirmSlotStart, mergeAdjacentWashingEvents, WashingCalendarEvent } from '../utils/washingEvents';
 import { UserContext } from './Layout';
 
 // Function to check if a time slot is during church hours
@@ -586,8 +586,13 @@ const WashingReservation: React.FC = () => {
   }, []);
 
   const EventComponent: React.FC<EventProps<CalendarEvent>> = ({ event }) => (
-    <div className="rbc-event-content">
-      {event.title}
+    <div className="rbc-event-content washing-event">
+      <span className="washing-event-time md:hidden">
+        <span>{format(event.start, 'HH:mm')}</span>
+        <span className="washing-event-dash">-</span>
+        <span>{format(event.end, 'HH:mm')}</span>
+      </span>
+      <span className="washing-event-name">{event.title}</span>
       {event.user_id === user?.id && (
         <button
           onClick={(e) => {

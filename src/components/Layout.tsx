@@ -144,6 +144,12 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
     setupDinnerDaysJob(); // Set up the job to run at midnight
   }, [fetchAllUsers]);
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    document.body.style.pointerEvents = '';
+    document.body.style.overflow = '';
+  }, [location.pathname]);
+
   // Note: Do not change this to use a "users" table. We're using Supabase Auth for user data.
 
   const isActive = (path: string) => location.pathname === path;
@@ -181,31 +187,39 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
     <RefreshUsersContext.Provider value={fetchAllUsers}>
       <div className="flex flex-col min-h-screen bg-background font-sans antialiased">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center">
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="mr-2 md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left">
-              <SheetHeader>
-                <SheetTitle>KlosterApp</SheetTitle>
-              </SheetHeader>
-              <nav className="flex flex-col gap-1">
-                <NavItems stacked onClick={() => setIsMobileMenuOpen(false)} />
-              </nav>
-            </SheetContent>
-          </Sheet>
-          <Link to="/" className="mr-6 flex items-center space-x-2">
-            <Logo className="h-7 w-auto fill-foreground" />
-            <span className="font-bold">KlosterApp</span>
-          </Link>
-          <nav className="hidden items-center gap-1 md:flex">
-            <NavItems />
-          </nav>
-          <div className="ml-auto flex items-center">
+        <div className="container grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <div className="flex items-center">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left">
+                <SheetHeader>
+                  <SheetTitle>KlosterApp</SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-1">
+                  <NavItems stacked onClick={() => setIsMobileMenuOpen(false)} />
+                </nav>
+              </SheetContent>
+            </Sheet>
+            <Link to="/" className="hidden items-center space-x-2 md:flex">
+              <Logo className="h-7 w-auto fill-foreground" />
+              <span className="font-bold">KlosterApp</span>
+            </Link>
+          </div>
+          <div className="flex items-center justify-center">
+            <Link to="/" className="flex items-center space-x-2 md:hidden">
+              <Logo className="h-7 w-auto fill-foreground" />
+              <span className="font-bold">KlosterApp</span>
+            </Link>
+            <nav className="hidden items-center gap-1 md:flex">
+              <NavItems />
+            </nav>
+          </div>
+          <div className="flex items-center justify-end">
             {session && <UserMenu session={session} isAdmin={isAdmin} />}
           </div>
         </div>

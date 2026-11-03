@@ -29,6 +29,8 @@ interface AdminSettingsDB {
   suspended_weekdays: number[];
 }
 
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
+
 const presetColors = [
   { hex: '#1E40AF', name: 'Royal Blue' },
   { hex: '#047857', name: 'Forest Green' },
@@ -72,20 +74,21 @@ const UserSettings: React.FC = () => {
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({ suspendedWeekdays: [] });
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   useEffect(() => {
     setDinnerDays(prevDays => {
+      let changed = false;
       const newDays = { ...prevDays };
-      weekdays.forEach((day, index) => {
+      WEEKDAYS.forEach((day, index) => {
         const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
-        if (isSuspended) {
-          newDays[day].status = 'never';
+        if (isSuspended && newDays[day].status !== 'never') {
+          newDays[day] = { ...newDays[day], status: 'never' };
+          changed = true;
         }
       });
-      return newDays;
+      return changed ? newDays : prevDays;
     });
-  }, [adminSettings, weekdays]);
+  }, [adminSettings]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -135,7 +138,7 @@ const UserSettings: React.FC = () => {
     if (!checked) {
       setDinnerDays(prevDays => {
         const newDays = { ...prevDays };
-        weekdays.forEach(day => {
+        WEEKDAYS.forEach(day => {
           newDays[day] = { ...newDays[day], status: 'never' };
         });
         return newDays;
@@ -152,7 +155,7 @@ const UserSettings: React.FC = () => {
 
     // Update dinnerDays statuses for suspended days
     const updatedDinnerDays = { ...dinnerDays };
-    weekdays.forEach((day, index) => {
+    WEEKDAYS.forEach((day, index) => {
       const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
       if (isSuspended) {
         updatedDinnerDays[day].status = 'never';
@@ -536,7 +539,7 @@ const UserSettings: React.FC = () => {
                       <div>
                         <Label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Auto Response</Label>
                         <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
-                          {weekdays.map((day, index) => {
+                          {WEEKDAYS.map((day, index) => {
                             const isSuspended = adminSettings.suspendedWeekdays.includes(index + 1);
                             return (
                               <div key={day} className="flex flex-col items-center" onMouseDown={(e) => {
