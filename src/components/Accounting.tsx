@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { UserContext } from './Layout';
 import UserIcon from './UserIcon';
 import { UserData } from './Layout';
+import { isGuestId, parseLocalDate, resolveDinnerUser } from '../utils/dinnerUsers';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -23,6 +24,9 @@ interface Attendant {
   id: string;
   portions: number | string;
   isTakeAway: boolean;
+  displayName?: string;
+  iconColor?: string;
+  isNameSnapshot?: boolean;
 }
 
 interface GuestEntry {
@@ -84,11 +88,14 @@ const Accounting: React.FC = () => {
     let guestCount = 0;
 
     attendants.forEach(attendant => {
+      if (attendant.isNameSnapshot) {
+        return;
+      }
       const portions = typeof attendant.portions === 'string' ? parseFloat(attendant.portions) : (attendant.portions || 1);
       const portionCount = isNaN(portions) ? 1 : portions;
 
       totalPortions += portionCount;
-      if (attendant.id.startsWith('guest-')) {
+      if (isGuestId(attendant.id)) {
         guestCount++;
       }
     });
@@ -174,7 +181,7 @@ const Accounting: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Users</SelectItem>
-                {users && users.map(user => (
+                {users && users.filter(user => !user.raw_user_meta_data?.deleted).map(user => (
                   <SelectItem key={user.id} value={user.id}>
                     <div className="flex items-center">
                       <UserIcon user={user} size="small" />
@@ -218,19 +225,19 @@ const Accounting: React.FC = () => {
                       return (
                         <tr key={day.id}>
                           <td>
-                            {new Date(day.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            {parseLocalDate(day.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
                           <td>
                             <div className="flex items-center space-x-2">
                               {day.cooks.map(cookId => {
-                                const user = users && users.find(u => u.id === cookId);
+                                const user = resolveDinnerUser(users, cookId, day.attendants || []);
                                 return (
                                   <div key={cookId} className="flex items-center space-x-1">
                                     <UserIcon
-                                      user={user || { id: cookId, raw_user_meta_data: {} }}
+                                      user={user}
                                       size="small"
                                     />
-                                    <span>{user?.raw_user_meta_data?.display_name || cookId}</span>
+                                    <span>{user.raw_user_meta_data?.display_name}</span>
                                   </div>
                                 );
                               })}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { createClient, Session } from '@supabase/supabase-js';
 import { UserData } from './components/Layout';
+import { isAdminUser, isDeletedUser } from './utils/users';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Dinner from './components/Dinner';
@@ -21,32 +22,73 @@ const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.R
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
-    const fetchUserAndSetAdmin = async (session: Session) => {
+    let isMounted = true;
+
+    const signOutDeletedUser = async () => {
+      await supabase.auth.signOut();
+      setSession(null);
+      setIsAdmin(false);
+    };
+
+    const fetchUserAndSetAdmin = async (nextSession: Session) => {
+      if (isDeletedUser(nextSession.user)) {
+        await signOutDeletedUser();
+        return;
+      }
+
       const { data, error } = await supabase.rpc('get_all_users');
+      if (!isMounted) return;
       if (error) {
         console.error('Error fetching all users:', error);
-      } else if (data && session.user) {
-        const currentUser = data.find((u: UserData) => u.id === session.user.id);
-        setIsAdmin(currentUser?.type === 'admin');
+        setIsAdmin(isAdminUser(nextSession.user));
+        return;
+      }
+      if (data && nextSession.user) {
+        const currentUser = data.find((u: UserData) => u.id === nextSession.user.id);
+        if (isDeletedUser(currentUser)) {
+          await signOutDeletedUser();
+          return;
+        }
+        setIsAdmin(isAdminUser(currentUser) || isAdminUser(nextSession.user));
       }
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) fetchUserAndSetAdmin(session);
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      if (!isMounted) return;
+      setSession(currentSession);
+      if (currentSession) {
+        await fetchUserAndSetAdmin(currentSession);
+      }
+      if (isMounted) setAuthReady(true);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) fetchUserAndSetAdmin(session);
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      if (nextSession) {
+        fetchUserAndSetAdmin(nextSession);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
+
+  if (!authReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <Router>

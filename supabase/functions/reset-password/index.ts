@@ -54,6 +54,14 @@ Deno.serve(async (req) => {
       })
     }
 
+    const { data: userRecord } = await supabase.auth.admin.getUserById(userId)
+    if (userRecord?.user?.user_metadata?.deleted) {
+      return new Response(JSON.stringify({ error: 'This user has been deleted.' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Update the user's password using the admin API
     const { error: updateError } = await supabase.auth.admin.updateUserById(
       userId,

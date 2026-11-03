@@ -6,6 +6,7 @@ import { Button } from "./ui/button"
 import { LayoutDashboard, UtensilsCrossed, WashingMachine, ShieldCheck, Wallet, Calculator, Menu, X, BedDouble } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { ReactComponent as Logo } from '../icons/logo.svg';
+import { isDeletedUser } from '../utils/users';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -33,6 +34,9 @@ const updateDinnerDaysJob = async () => {
   let attendants = existingDay?.attendants || [];
 
   for (const user of users) {
+    if (isDeletedUser(user)) {
+      continue;
+    }
     if (user.raw_user_meta_data.joinDinners) {
       const dinnerDays = user.raw_user_meta_data.dinnerDays || {};
       const dayOfWeek = futureDate.toLocaleDateString('en-US', { weekday: 'long' });
@@ -41,19 +45,25 @@ const updateDinnerDaysJob = async () => {
       const existingAttendantIndex = attendants.findIndex((a: any) => a.id === user.id);
 
       if (daySettings && (daySettings.status === 'always' || daySettings.status === 'takeaway')) {
+        const displayName = user.raw_user_meta_data?.display_name || user.email?.split('@')[0];
+        const iconColor = user.raw_user_meta_data?.iconColor;
         if (existingAttendantIndex !== -1) {
           attendants[existingAttendantIndex] = {
             ...attendants[existingAttendantIndex],
             portions: Number(daySettings.portions),
             isTakeAway: daySettings.status === 'takeaway',
-            isAutomaticallySet: true
+            isAutomaticallySet: true,
+            displayName,
+            iconColor
           };
         } else {
           attendants.push({
             id: user.id,
             portions: Number(daySettings.portions),
             isTakeAway: daySettings.status === 'takeaway',
-            isAutomaticallySet: true
+            isAutomaticallySet: true,
+            displayName,
+            iconColor
           });
         }
       } else if (existingAttendantIndex !== -1 && attendants[existingAttendantIndex].isAutomaticallySet) {
@@ -105,6 +115,7 @@ export interface UserData {
 }
 
 export const UserContext = createContext<UserData[]>([]);
+export const RefreshUsersContext = createContext<() => Promise<void>>(async () => {});
 
 interface LayoutProps {
   session: Session | null;
@@ -117,20 +128,20 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
   const [logoColor, setLogoColor] = useState('#ffffff'); // Default color
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchAllUsers = async () => {
-      // IMPORTANT: This uses a custom RPC function to fetch users. Do not change to use a "users" table.
-      const { data, error } = await supabase.rpc('get_all_users');
-      if (error) {
-        console.error('Error fetching all users:', error);
-      } else {
-        setUsers(data);
-      }
-    };
+  const fetchAllUsers = useCallback(async () => {
+    // IMPORTANT: This uses a custom RPC function to fetch users. Do not change to use a "users" table.
+    const { data, error } = await supabase.rpc('get_all_users');
+    if (error) {
+      console.error('Error fetching all users:', error);
+    } else {
+      setUsers(data || []);
+    }
+  }, []);
 
+  useEffect(() => {
     fetchAllUsers();
     setupDinnerDaysJob(); // Set up the job to run at midnight
-  }, []);
+  }, [fetchAllUsers]);
 
   // Note: Do not change this to use a "users" table. We're using Supabase Auth for user data.
 
@@ -183,6 +194,7 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
 
   return (
     <UserContext.Provider value={users}>
+    <RefreshUsersContext.Provider value={fetchAllUsers}>
       <div className="flex flex-col min-h-screen bg-background font-sans antialiased">
       <header className="bg-primary text-primary-foreground p-4 sm:p-4 p-2 relative">
         <div className="mx-4">
@@ -224,6 +236,7 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
         © 2023 KlosterApp
       </footer>
     </div>
+    </RefreshUsersContext.Provider>
   </UserContext.Provider>
   );
 };

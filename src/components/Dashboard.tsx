@@ -11,6 +11,7 @@ import { supabase } from '../utils/createClient';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from './Layout';
+import { getGuestLabel, isGuestId, localDateString, parseLocalDate, resolveDinnerUser } from '../utils/dinnerUsers';
 
 interface Booking {
   id: string;
@@ -26,6 +27,9 @@ interface Attendant {
   id: string;
   portions: number;
   isTakeAway: boolean;
+  displayName?: string;
+  iconColor?: string;
+  isNameSnapshot?: boolean;
 }
 
 interface DinnerDay {
@@ -82,7 +86,7 @@ const Dashboard: React.FC = () => {
     const { data, error } = await supabase
       .from('dinner_days')
       .select('*')
-      .gte('date', today.toISOString())
+      .gte('date', localDateString(today))
       .order('date');
 
     if (error) {
@@ -90,7 +94,7 @@ const Dashboard: React.FC = () => {
       setUpcomingDinner(null);
     } else {
       const nextDinner = data.find(dinner => {
-        const dinnerDate = new Date(dinner.date);
+        const dinnerDate = parseLocalDate(dinner.date);
         return dinnerDate >= today && Array.isArray(dinner.cooks) && dinner.cooks.includes(currentUser);
       });
       setUpcomingDinner(nextDinner || null);
@@ -98,7 +102,7 @@ const Dashboard: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = parseLocalDate(dateString);
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -253,13 +257,16 @@ const Dashboard: React.FC = () => {
       console.error('Error fetching admin settings:', error);
     } else if (data) {
       setBudgetPerMeal(data.budget_per_meal || 30);
-      setCurrency(data.currency || ':-');
+      setCurrency(data.currency_type || data.currency || ':-');
     }
   };
 
   const calculateBudget = (attendants: Attendant[]) => {
     const totalPortions = attendants.reduce((total, attendant) => {
-      if (attendant.id.startsWith('guest-')) {
+      if (attendant.isNameSnapshot) {
+        return total;
+      }
+      if (isGuestId(attendant.id)) {
         return total + 1; // Count guests as 1 portion each
       }
       return total + (Number(attendant.portions) || 0);
@@ -425,7 +432,10 @@ const Dashboard: React.FC = () => {
                     <h3 className="text-lg font-semibold">Attendees:</h3>
                     <span className="text-lg font-semibold">
                       {calculateBudget(upcomingDinner.attendants || [])} {currency} / {upcomingDinner.attendants ? upcomingDinner.attendants.reduce((total, attendant) => {
-                        if (attendant.id.startsWith('guest-')) {
+                        if (attendant.isNameSnapshot) {
+                          return total;
+                        }
+                        if (isGuestId(attendant.id)) {
                           return total + 1; // Count guests as 1 portion each
                         }
                         return total + (Number(attendant.portions) || 0);
@@ -437,20 +447,18 @@ const Dashboard: React.FC = () => {
                   <div className="flex flex-wrap gap-2 mb-4">
                     {upcomingDinner.attendants && (() => {
                       // Count guests
-                      const guests = upcomingDinner.attendants.filter(a => a.id.startsWith('guest-'));
+                      const guests = upcomingDinner.attendants.filter(a => isGuestId(a.id));
                       const guestCount = guests.length;
                       
                       // Get non-guest attendants
-                      const nonGuestAttendants = upcomingDinner.attendants.filter(a => !a.id.startsWith('guest-'));
+                      const nonGuestAttendants = upcomingDinner.attendants.filter(a => !isGuestId(a.id) && !a.isNameSnapshot);
                       
                       // Combine guests into a single element if there are any
                       const elements = [...nonGuestAttendants.map((attendant) => {
-                        const user = users?.find(u => u.id === attendant.id);
-                        
                         return (
                           <UserTag
                             key={attendant.id}
-                            user={user || { id: attendant.id, raw_user_meta_data: {} }}
+                            user={resolveDinnerUser(users, attendant.id, upcomingDinner.attendants || [])}
                             portions={attendant.portions}
                             isTakeAway={attendant.isTakeAway}
                           />
@@ -465,7 +473,7 @@ const Dashboard: React.FC = () => {
                             style={{ backgroundColor: 'white' }}
                             className="px-3 py-1 rounded-full text-sm font-bold text-gray-500 flex items-center gap-1 border border-gray-300"
                           >
-                            <span>Guest{guestCount > 1 ? `s (${guestCount})` : ''}</span>
+                            <span>{getGuestLabel(upcomingDinner.attendants)}</span>
                           </div>
                         );
                       }

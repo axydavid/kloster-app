@@ -12,9 +12,10 @@ interface LongPressModalProps {
   onClose: () => void;
   onJoin: (portions: number) => void;
   onTakeAway: (portions: number) => void;
-  onAddGuests: (guestCount: number) => void;
+  onAddGuests: (guestCount: number, guestNames: string) => void;
   onLeave?: () => void; // For leaving
   initialGuestCount?: number;
+  initialGuestNames?: string;
   currentUserAttendance?: {
     isAttending: boolean;
     isTakeAway: boolean;
@@ -30,10 +31,12 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
   onAddGuests,
   onLeave,
   initialGuestCount = 0,
+  initialGuestNames = '',
   currentUserAttendance
 }) => {
   const [userPortions, setUserPortions] = useState(currentUserAttendance?.portions || 1);
   const [guestCount, setGuestCount] = useState(initialGuestCount);
+  const [guestNames, setGuestNames] = useState(initialGuestNames);
   const [initialPortionsLoaded, setInitialPortionsLoaded] = useState(false);
 
   // Update portions when currentUserAttendance changes
@@ -42,6 +45,13 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
       setUserPortions(currentUserAttendance.portions);
     }
   }, [currentUserAttendance]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setGuestCount(initialGuestCount);
+      setGuestNames(initialGuestNames);
+    }
+  }, [isOpen, initialGuestCount, initialGuestNames]);
 
   const handleEscapeKey = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {
@@ -148,8 +158,8 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
           </div>
 
           <div className="border-t pt-4 mt-4">
-            <div className="flex justify-center mb-3">
-              <div className="relative">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="relative shrink-0">
                 <UserPlus className="text-gray-500 absolute left-2 top-1/2 transform -translate-y-1/2" />
                 <Input
                   type="number"
@@ -162,10 +172,17 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
                   style={{ WebkitAppearance: 'none', MozAppearance: 'textfield' }}
                 />
               </div>
+              <Input
+                type="text"
+                value={guestNames}
+                onChange={(e) => setGuestNames(e.target.value)}
+                placeholder="Names (optional)"
+                className="flex-1 bg-gray-100"
+              />
             </div>
             <Button
               onClick={() => {
-                onAddGuests(guestCount);
+                onAddGuests(guestCount, guestNames.trim());
                 onClose();
               }}
               className="w-full bg-purple-500 hover:bg-purple-600"

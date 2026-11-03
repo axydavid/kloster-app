@@ -5,6 +5,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { supabase } from '../utils/createClient';
 import { UserContext } from './Layout';
+import { activeUsers } from '../utils/users';
 
 interface BudgetEntry {
   id: string;
@@ -80,16 +81,17 @@ const GuestHospitality: React.FC = () => {
   };
 
   const distributeNegativeBalance = async () => {
-    if (guestHospitalityFund >= 0 || users.length === 0) {
+    const assignedUsers = activeUsers(users);
+    if (guestHospitalityFund >= 0 || assignedUsers.length === 0) {
       setError('The Guest Hospitality Fund is not negative or there are no assigned users.');
       setShowError(true);
       return;
     }
 
-    const amountPerUser = Math.abs(guestHospitalityFund) / users.length;
+    const amountPerUser = Math.abs(guestHospitalityFund) / assignedUsers.length;
     const description = `Guest Hospitality Fund (Deficit Coverage)`;
 
-    const budgetEntries = users.map((user: User) => ({
+    const budgetEntries = assignedUsers.map((user: User) => ({
       user_id: user.id,
       amount: amountPerUser,
       type: 'withdrawal' as const,

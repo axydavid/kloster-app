@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
 import { Utensils, Lock } from 'lucide-react';
+import { preserveUserDinnerNames } from '../utils/dinnerUsers';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -269,14 +270,18 @@ const UserSettings: React.FC = () => {
             ...attendants[existingAttendantIndex],
             portions: Number(daySettings.portions),
             isTakeAway: daySettings.status === 'takeaway',
-            isAutomaticallySet: true
+            isAutomaticallySet: true,
+            displayName: displayName.trim(),
+            iconColor
           };
         } else {
           attendants.push({
             id: userId,
             portions: Number(daySettings.portions),
             isTakeAway: daySettings.status === 'takeaway',
-            isAutomaticallySet: true
+            isAutomaticallySet: true,
+            displayName: displayName.trim(),
+            iconColor
           });
         }
       } else if (existingAttendantIndex !== -1 && attendants[existingAttendantIndex].isAutomaticallySet) {
@@ -298,7 +303,7 @@ const UserSettings: React.FC = () => {
     const startDate = new Date();
     const { data: dinnerDays, error } = await supabase
       .from('dinner_days')
-      .select('date, attendants')
+      .select('date, attendants, cooks')
       .gte('date', startDate.toISOString().split('T')[0]);
 
     if (error) {
@@ -307,10 +312,11 @@ const UserSettings: React.FC = () => {
     }
 
     for (const day of dinnerDays) {
-      const updatedAttendants = day.attendants.filter((a: { id: string }) => a.id !== userId);
+      const updatedAttendants = (day.attendants || []).filter((a: { id: string }) => a.id !== userId);
+      const updatedCooks = (day.cooks || []).filter((id: string) => id !== userId);
       const { error: updateError } = await supabase
         .from('dinner_days')
-        .update({ attendants: updatedAttendants })
+        .update({ attendants: updatedAttendants, cooks: updatedCooks })
         .eq('date', day.date);
 
       if (updateError) {
@@ -376,7 +382,7 @@ const UserSettings: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you sure you want to delete your account? This will permanently remove all your data, including dinner participation. This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete your account? You will be hidden from the app and will not be able to log in. Your name stays on past dinners. An admin can restore this account by adding the same email again.')) {
       return;
     }
 
@@ -384,6 +390,16 @@ const UserSettings: React.FC = () => {
     setToast({ message: 'Deleting your account...', type: 'loading' });
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await preserveUserDinnerNames(
+          supabase,
+          user.id,
+          user.user_metadata?.display_name || user.email?.split('@')[0],
+          user.user_metadata?.iconColor
+        );
+      }
+
       const { error } = await supabase.functions.invoke('delete-user-account');
 
       if (error) {
@@ -402,10 +418,10 @@ const UserSettings: React.FC = () => {
         throw new Error(errorMessage);
       }
 
-      setToast({ message: 'Account deleted successfully.', type: 'success' });
+      setToast({ message: 'Account deleted.', type: 'success' });
       await supabase.auth.signOut();
       // Redirect to login page with a message
-      navigate('/login', { state: { message: 'Your account has been successfully deleted.' } });
+      navigate('/login', { state: { message: 'This user has been deleted.' } });
 
     } catch (error: any) {
       console.error('Error deleting account:', error);
@@ -659,7 +675,7 @@ const UserSettings: React.FC = () => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Permanently delete your account and all associated data. This includes your profile and dinner participation. This action cannot be undone.
+            Deactivate your account. You will disappear from the user list and will not be able to log in. Past dinner names stay. An admin can restore the account by adding this email again.
           </p>
           <Button
             variant="destructive"

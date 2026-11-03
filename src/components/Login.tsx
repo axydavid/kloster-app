@@ -5,6 +5,7 @@ import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
 import { ReactComponent as Logo } from '../icons/logo.svg';
+import { isDeletedLoginError, isDeletedUser } from '../utils/users';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -21,8 +22,11 @@ const Login: React.FC = () => {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      if (session && !isDeletedUser(session.user)) {
         navigate('/dashboard');
+      } else if (session && isDeletedUser(session.user)) {
+        await supabase.auth.signOut();
+        setMessage('This user has been deleted.');
       }
     };
     checkSession();
@@ -51,10 +55,17 @@ const Login: React.FC = () => {
 
       if (isSignUp) {
         alert('Sign up successful! Please check your email to confirm your account.');
+      } else if (isDeletedUser(result.data.user)) {
+        await supabase.auth.signOut();
+        setMessage('This user has been deleted.');
       } else {
         navigate('/dashboard');
       }
     } catch (error) {
+      if (isDeletedLoginError(error)) {
+        setMessage('This user has been deleted.');
+        return;
+      }
       if (error instanceof Error) {
         console.error('Auth error:', error);
         alert(error.message);
@@ -80,7 +91,11 @@ const Login: React.FC = () => {
             <CardDescription>Enter your credentials to continue</CardDescription>
           </CardHeader>
           <CardContent>
-            {message && <p className="text-green-500 mb-4 text-center">{message}</p>}
+            {message && (
+              <p className={`mb-4 text-center ${/deleted/i.test(message) ? 'text-red-500' : 'text-green-500'}`}>
+                {message}
+              </p>
+            )}
             <form onSubmit={handleAuth}>
               <div className="grid w-full items-center gap-4">
                 {isSignUp && (

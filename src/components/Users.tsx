@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import UserIcon from './UserIcon';
 import { createClient } from '@supabase/supabase-js';
+import { RefreshUsersContext } from './Layout';
+import { preserveUserDinnerNames } from '../utils/dinnerUsers';
+import { isAdminUser, isDeletedUser, readFunctionError } from '../utils/users';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -27,6 +30,7 @@ const Users: React.FC = () => {
   const [newUserType, setNewUserType] = useState('user');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const refreshUsers = useContext(RefreshUsersContext);
   // State for editing user display names
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editedDisplayName, setEditedDisplayName] = useState<string>('');
@@ -41,7 +45,7 @@ const Users: React.FC = () => {
           console.error('Error fetching all users:', allUsersError);
         } else if (allUsers) {
           setUsers(allUsers);
-          setIsAdmin(allUsers.find((u: UserData) => u.id === user.id)?.type === 'admin');
+          setIsAdmin(isAdminUser(allUsers.find((u: UserData) => u.id === user.id)) || isAdminUser(user));
         }
       }
     };
@@ -91,29 +95,31 @@ const Users: React.FC = () => {
       return;
     }
 
-    if (window.confirm('Are you sure you want to delete this user? This will remove them from all future dinners and delete their account permanently.')) {
+    if (window.confirm('Are you sure you want to delete this user? They will be hidden and cannot log in. Their name stays on past dinners, and adding the same email later restores the account.')) {
       try {
+        const userToDelete = users.find(user => user.id === userId);
+        await preserveUserDinnerNames(
+          supabase,
+          userId,
+          userToDelete?.raw_user_meta_data?.display_name || userToDelete?.email?.split('@')[0],
+          userToDelete?.raw_user_meta_data?.iconColor
+        );
+
         const { error } = await supabase.functions.invoke('delete-user-account', {
           body: { userIdToDelete: userId },
         });
 
         if (error) {
-          let errorMessage = error.message;
-          try {
-            const errorBody = await (error.context as any).json();
-            if (errorBody.error) {
-              errorMessage = errorBody.error;
-            } else if (errorBody.details) {
-              errorMessage = errorBody.details;
-            }
-          } catch (e) {
-            // Ignore parsing error
-          }
-          throw new Error(errorMessage);
+          throw new Error(await readFunctionError(error));
         }
 
-        setUsers(users.filter(user => user.id !== userId));
-        alert('User deleted successfully.');
+        setUsers(users.map(user =>
+          user.id === userId
+            ? { ...user, raw_user_meta_data: { ...user.raw_user_meta_data, deleted: true } }
+            : user
+        ));
+        await refreshUsers();
+        alert('User deleted. They can be restored by adding the same email again.');
       } catch (error: any) {
         console.error('Error deleting user:', error);
         alert(`Failed to delete user: ${error.message}`);
@@ -134,6 +140,47 @@ const Users: React.FC = () => {
     }
 
     try {
+      const existingUser = users.find(user => user.email?.toLowerCase() === newUserEmail.trim().toLowerCase());
+      if (existingUser && !isDeletedUser(existingUser)) {
+        alert('A user with this email already exists.');
+        return;
+      }
+
+      if (existingUser && isDeletedUser(existingUser)) {
+        const { data, error } = await supabase.functions.invoke('delete-user-account', {
+          body: {
+            action: 'restore',
+            email: newUserEmail.trim(),
+            password: newUserPassword,
+            displayName: newUserName,
+            type: newUserType
+          }
+        });
+        if (error) throw new Error(await readFunctionError(error));
+
+        alert(`User restored: ${newUserName} (${newUserEmail})`);
+        setNewUserEmail('');
+        setNewUserPassword('');
+        setNewUserName('');
+        setNewUserType('user');
+        setUsers(users.map(user =>
+          user.id === existingUser.id
+            ? {
+                ...user,
+                type: newUserType,
+                raw_user_meta_data: {
+                  ...user.raw_user_meta_data,
+                  display_name: newUserName,
+                  type: newUserType,
+                  deleted: false
+                }
+              }
+            : user
+        ));
+        await refreshUsers();
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email: newUserEmail,
         password: newUserPassword,
@@ -145,7 +192,31 @@ const Users: React.FC = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        if (/already registered|already exists|user already/i.test(error.message)) {
+          const { data: restoreData, error: restoreError } = await supabase.functions.invoke('delete-user-account', {
+            body: {
+              action: 'restore',
+              email: newUserEmail.trim(),
+              password: newUserPassword,
+              displayName: newUserName,
+              type: newUserType
+            }
+          });
+          if (restoreError) throw new Error(await readFunctionError(restoreError, error.message));
+          if (restoreData?.user) {
+            alert(`User restored: ${newUserName} (${newUserEmail})`);
+            setNewUserEmail('');
+            setNewUserPassword('');
+            setNewUserName('');
+            setNewUserType('user');
+            setUsers([...users.filter(user => user.id !== restoreData.user.id), restoreData.user]);
+            await refreshUsers();
+            return;
+          }
+        }
+        throw error;
+      }
 
       alert(`User added successfully: ${newUserName} (${newUserEmail})`);
       setNewUserEmail('');
@@ -167,7 +238,7 @@ const Users: React.FC = () => {
       if (error.message.includes('Password should be at least 6 characters')) {
         alert('Password should be at least 6 characters long.');
       } else {
-        alert('Failed to add user. Please try again.');
+        alert(error.message || 'Failed to add user. Please try again.');
       }
     }
   };
@@ -243,7 +314,7 @@ const Users: React.FC = () => {
         <Button type="submit">Add User</Button>
       </form>
 
-      {users.map((user: UserData) => (
+      {users.filter(user => !isDeletedUser(user)).map((user: UserData) => (
         <div key={user.id} className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 p-2 border-b">
           <div className="flex items-center mb-2 sm:mb-0">
             <UserIcon user={user} size="small" />
@@ -286,7 +357,7 @@ const Users: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             <div className="text-sm text-gray-500">{user.email}</div>
             <Select
-              value={user.type}
+              value={isAdminUser(user) ? 'admin' : 'user'}
               onValueChange={(newType) => handleUpdateUserType(user.id, newType)}
             >
               <SelectTrigger className="w-[100px]">

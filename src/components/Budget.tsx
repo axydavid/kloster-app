@@ -315,7 +315,7 @@ const Budget: React.FC<BudgetProps> = ({ isAdmin }) => {
                         </SelectItem>
                       )}
                       {users
-                        .filter(user => user.id !== currentUser?.id && user.raw_user_meta_data?.display_name)
+                        .filter(user => user.id !== currentUser?.id && user.raw_user_meta_data?.display_name && !user.raw_user_meta_data?.deleted)
                         .map((user) => (
                           <SelectItem key={user.id} value={user.id}>
                             <div className="flex items-center">

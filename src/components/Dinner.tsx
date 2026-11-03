@@ -14,6 +14,7 @@ import pigIcon from '../icons/pig.png';
 import chickenIcon from '../icons/chicken.png';
 import LongPressModal from './LongPressModal';
 import { UserPlus } from 'lucide-react';
+import { getGuestLabel, getGuestNames, getUserSnapshotFields, isGuestId, isVisibleAttendant, localDateString, parseLocalDate, resolveDinnerUser } from '../utils/dinnerUsers';
 import fishIcon from '../icons/fish.png';
 import riceBowlIcon from '../icons/rice-bowl.png';
 import potatoIcon from '../icons/potato.png';
@@ -55,6 +56,11 @@ const Dinner: React.FC = () => {
     portions: number;
     isTakeAway: boolean;
     isAutomaticallySet: boolean;
+    displayName?: string;
+    iconColor?: string;
+    isNameSnapshot?: boolean;
+    guestNames?: string;
+    guestName?: string;
   }
 
   interface DinnerDay {
@@ -165,7 +171,6 @@ const Dinner: React.FC = () => {
     maxWidth: '100%',
     boxSizing: 'border-box',
   };
-  const contextUsers = useContext(UserContext);
   const [dinnerDays, setDinnerDays] = useState<DinnerDay[]>([]);
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date>(() => new Date());
@@ -239,7 +244,7 @@ const Dinner: React.FC = () => {
 
   useEffect(() => {
     if (!hasScrolledToCurrentDay.current && dinnerDays.length > 0) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = localDateString();
       const currentDayElement = document.getElementById(`day-${today}`);
       if (currentDayElement) {
         currentDayElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -248,15 +253,19 @@ const Dinner: React.FC = () => {
     }
   }, [dinnerDays]);
 
+  const getCurrentUserSnapshot = () => getUserSnapshotFields(users.find(user => user.id === currentUserId));
+
   const fetchDinnerDays = async () => {
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + 28); // 4 weeks from start date
+    const rangeStart = localDateString(startDate);
+    const rangeEnd = localDateString(endDate);
 
     const { data, error } = await supabase
       .from('dinner_days')
       .select('*')
-      .gte('date', startDate.toISOString())
-      .lte('date', endDate.toISOString())
+      .gte('date', rangeStart)
+      .lte('date', rangeEnd)
       .order('date', { ascending: true });
 
     if (error) {
@@ -264,7 +273,7 @@ const Dinner: React.FC = () => {
     } else {
       const allDays = getAllDaysInRange(startDate, endDate);
       const mergedDays = allDays.map(day => {
-        const dateString = day.toISOString().split('T')[0];
+        const dateString = localDateString(day);
         const existingDay = data?.find(d => d.date === dateString);
         return existingDay || {
           date: dateString,
@@ -290,6 +299,8 @@ const Dinner: React.FC = () => {
   const isDaySuspended = (date: Date): boolean => {
     return adminSettings.suspendedWeekdays.includes(date.getDay());
   };
+
+  const getDayDate = (date: string) => parseLocalDate(date);
 
   const showConfirmationDialog = async (message: string): Promise<boolean> => {
     return new Promise<boolean>((resolve) => {
@@ -334,11 +345,11 @@ const Dinner: React.FC = () => {
       const day = dinnerDays.find(d => d.date === date);
       if (!day) throw new Error('Day not found');
 
-      const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(date).getDay());
+      const isSuspendedDay = adminSettings.suspendedWeekdays.includes(parseLocalDate(date).getDay());
       const hasNoAttendeesOrCooks = (day.attendants?.length === 0 || !day.attendants) && (day.cooks?.length === 0 || !day.cooks);
 
       if (isSuspendedDay && hasNoAttendeesOrCooks) {
-        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+        const dayName = parseLocalDate(date).toLocaleDateString('en-US', { weekday: 'long' });
         const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
         if (!confirmed) {
           return;
@@ -368,7 +379,13 @@ const Dinner: React.FC = () => {
           const { data: userData, error: userDataError } = await supabase.rpc('get_user_metadata', { user_id: currentUserId });
           if (userDataError) throw userDataError;
           const userPortions = userData?.portions || 1;
-          updateData.attendants.push({ id: currentUserId, portions: userPortions, isTakeAway: false, isAutomaticallySet: false });
+          updateData.attendants.push({
+            id: currentUserId,
+            portions: userPortions,
+            isTakeAway: false,
+            isAutomaticallySet: false,
+            ...getCurrentUserSnapshot()
+          });
         }
       }
 
@@ -407,11 +424,11 @@ const Dinner: React.FC = () => {
       const day = dinnerDays.find(d => d.date === date);
       if (!day) return;
 
-      const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(date).getDay());
+      const isSuspendedDay = adminSettings.suspendedWeekdays.includes(parseLocalDate(date).getDay());
       const hasNoAttendeesOrCooks = (day.attendants?.length === 0 || !day.attendants) && (day.cooks?.length === 0 || !day.cooks);
 
       if (isSuspendedDay && hasNoAttendeesOrCooks) {
-        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+        const dayName = parseLocalDate(date).toLocaleDateString('en-US', { weekday: 'long' });
         const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
         if (!confirmed) {
           return;
@@ -444,7 +461,13 @@ const Dinner: React.FC = () => {
           const { data: userData, error: userDataError } = await supabase.rpc('get_user_metadata', { user_id: currentUserId });
           if (userDataError) throw userDataError;
           const userPortions = userData?.portions || 1;
-          updateData.attendants.push({ id: currentUserId, portions: userPortions, isTakeAway: false, isAutomaticallySet: false });
+          updateData.attendants.push({
+            id: currentUserId,
+            portions: userPortions,
+            isTakeAway: false,
+            isAutomaticallySet: false,
+            ...getCurrentUserSnapshot()
+          });
         }
       }
 
@@ -543,11 +566,11 @@ const Dinner: React.FC = () => {
         throw fetchError;
       }
 
-      const isSuspendedDay = adminSettings.suspendedWeekdays.includes(new Date(date).getDay());
+      const isSuspendedDay = adminSettings.suspendedWeekdays.includes(parseLocalDate(date).getDay());
       const hasNoAttendeesOrCooks = attendants.length === 0 && cooks.length === 0;
 
       if (isSuspendedDay && hasNoAttendeesOrCooks) {
-        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+        const dayName = parseLocalDate(date).toLocaleDateString('en-US', { weekday: 'long' });
         const confirmed = await showConfirmationDialog(`There is no cooking scheduled for ${dayName}. Are you sure you want to continue?`);
         if (!confirmed) {
           return;
@@ -565,7 +588,8 @@ const Dinner: React.FC = () => {
           id: currentUserId,
           portions,
           isTakeAway,
-          isAutomaticallySet: false
+          isAutomaticallySet: false,
+          ...getCurrentUserSnapshot()
         } as Attendant);
       }
 
@@ -589,7 +613,7 @@ const Dinner: React.FC = () => {
     }
   };
 
-  const updateGuestAttendance = async (date: string, guestCount: number) => {
+  const updateGuestAttendance = async (date: string, guestCount: number, guestNames: string = '') => {
     try {
       // First, try to fetch the existing day
       const { data: existingDay, error: fetchError } = await supabase
@@ -618,10 +642,12 @@ const Dinner: React.FC = () => {
       const nonGuestAttendants = attendants.filter(a => !a.id.startsWith('guest-'));
 
       // Add new guests
+      const names = guestNames.trim();
       const newGuests = Array.from({ length: guestCount }, (_, i) => ({
         id: `guest-${i + 1}`,
         portions: 1,
-        isTakeAway: false
+        isTakeAway: false,
+        ...(names ? { guestNames: names } : {})
       }));
 
       const updatedAttendants = [...nonGuestAttendants, ...newGuests];
@@ -686,20 +712,20 @@ const Dinner: React.FC = () => {
                   key={`${day.date}-${index}`}
                   id={`day-${day.date}`}
                   style={{
-                    backgroundColor: isDaySuspended(new Date(day.date))
+                    backgroundColor: isDaySuspended(getDayDate(day.date))
                       ? 'rgba(229, 231, 235, 0.7)' // Lighter gray with transparency
                       : 'transparent',
                     minHeight: '80px'
                   }}
-                  className={`flex border-b border-gray-300 ${new Date(day.date).toDateString() === new Date().toDateString()
+                  className={`flex border-b border-gray-300 ${getDayDate(day.date).toDateString() === new Date().toDateString()
                     ? 'current-day-overlay'
                     : ''
                     }`}
                 >
                   <div className="flex-[0_0_70px] p-2 border-r border-gray-300 flex flex-col justify-center">
-                    <div className="text-lg">{new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                    <div className="text-lg">{getDayDate(day.date).toLocaleDateString('en-US', { weekday: 'short' })}</div>
                     <div className="text-sm text-gray-500">
-                      {new Date(day.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
+                      {getDayDate(day.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
                     </div>
                   </div>
                   <div
@@ -717,7 +743,7 @@ const Dinner: React.FC = () => {
                         {day.cooks.map((cookId) => (
                           <UserTag
                             key={cookId}
-                            user={users.find(user => user.id === cookId) || { id: cookId, raw_user_meta_data: {} }}
+                            user={resolveDinnerUser(users, cookId, day.attendants || [])}
                             portions={1} // Default value
                             isTakeAway={false} // Default value
                             showRemoveButton={cookId === currentUserId}
@@ -876,7 +902,10 @@ const Dinner: React.FC = () => {
                         <div className="flex items-center w-full h-full">
                           <span className="mr-2 px-2 py-1 text-sm font-bold bg-gray-100 rounded">
                             {day.attendants.reduce((total, attendant) => {
-                              if (attendant.id.startsWith('guest-')) {
+                              if (attendant.isNameSnapshot) {
+                                return total;
+                              }
+                              if (isGuestId(attendant.id)) {
                                 return total + 1; // Count guests as 1 portion each
                               }
                               return total + (Number(attendant.portions) || 0);
@@ -884,14 +913,11 @@ const Dinner: React.FC = () => {
                           </span>
                           <div className="flex flex-wrap items-center gap-1 flex-grow">
                             {day.attendants
-                              .filter(attendant => !attendant.id.startsWith('guest-'))
+                              .filter(attendant => isVisibleAttendant(attendant))
                               .map((attendant) => (
                                 <UserTag
                                   key={attendant.id}
-                                  user={users.find(user => user.id === attendant.id) || {
-                                    id: attendant.id,
-                                    raw_user_meta_data: {}
-                                  }}
+                                  user={resolveDinnerUser(users, attendant.id, day.attendants || [])}
                                   portions={attendant.portions}
                                   isTakeAway={attendant.isTakeAway}
                                   showRemoveButton={attendant.id === currentUserId}
@@ -899,11 +925,11 @@ const Dinner: React.FC = () => {
                                 />
                               ))}
                             {/* Display guest count if there are any */}
-                            {day.attendants.some(a => a.id.startsWith('guest-')) && (
+                            {day.attendants.some(a => isGuestId(a.id)) && (
                               <div
                                 className="px-3 py-1 rounded-full text-sm font-bold text-gray-500 flex items-center gap-1 border border-gray-300 bg-white"
                               >
-                                <span>Guest{day.attendants.filter(a => a.id.startsWith('guest-')).length > 1 ? `s (${day.attendants.filter(a => a.id.startsWith('guest-')).length})` : ''}</span>
+                                <span>{getGuestLabel(day.attendants)}</span>
                               </div>
                             )}
                           </div>
@@ -945,13 +971,14 @@ const Dinner: React.FC = () => {
             setIsLongPressModalOpen(false);
           }
         }}
-        onAddGuests={(guestCount: number) => {
+        onAddGuests={(guestCount: number, guestNames: string) => {
           if (longPressedDay) {
-            updateGuestAttendance(longPressedDay.date, guestCount);
+            updateGuestAttendance(longPressedDay.date, guestCount, guestNames);
             setIsLongPressModalOpen(false);
           }
         }}
-        initialGuestCount={longPressedDay ? (longPressedDay.attendants || []).filter(a => a.id.startsWith('guest-')).length : 0}
+        initialGuestCount={longPressedDay ? (longPressedDay.attendants || []).filter(a => isGuestId(a.id)).length : 0}
+        initialGuestNames={longPressedDay ? getGuestNames(longPressedDay.attendants || []) : ''}
         currentUserAttendance={longPressedDay && currentUserId ? {
           isAttending: (longPressedDay.attendants || []).some(a => a.id === currentUserId),
           isTakeAway: (longPressedDay.attendants || []).find(a => a.id === currentUserId)?.isTakeAway || false,
