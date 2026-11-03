@@ -16,6 +16,12 @@ export function clampWashingRange(start: Date, end: Date, startHour: number, end
     clampedStart.setHours(startHour, 0, 0, 0);
   }
 
+  const latestStart = new Date(clampedStart);
+  latestStart.setHours(Math.max(startHour, endHour - 1), 0, 0, 0);
+  if (clampedStart > latestStart) {
+    clampedStart.setTime(latestStart.getTime());
+  }
+
   const latestEnd = new Date(clampedStart);
   latestEnd.setHours(endHour, 0, 0, 0);
 
@@ -24,10 +30,7 @@ export function clampWashingRange(start: Date, end: Date, startHour: number, end
   }
 
   if (clampedEnd <= clampedStart) {
-    clampedEnd.setTime(clampedStart.getTime() + 60 * 60 * 1000);
-    if (clampedEnd > latestEnd) {
-      clampedEnd.setTime(latestEnd.getTime());
-    }
+    clampedEnd.setTime(Math.min(clampedStart.getTime() + 60 * 60 * 1000, latestEnd.getTime()));
   }
 
   return { start: clampedStart, end: clampedEnd };

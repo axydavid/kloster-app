@@ -107,6 +107,15 @@ display:none;
 .rbc-time-content{
   overflow: hidden;
 }
+
+.rbc-timeslot-group:last-child {
+  overflow: visible;
+}
+
+.rbc-timeslot-group:last-child .button-check {
+  top: 0.25rem;
+  bottom: auto;
+}
 .rbc-events-container{
   margin-right: 0 !important;
 }

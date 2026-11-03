@@ -256,6 +256,9 @@ const WashingReservation: React.FC = () => {
         }
 
         const { start, end } = clampWashingRange(slotInfo.start, slotInfo.end, washingStartHour, washingEndHour);
+        if (end <= start) {
+          return;
+        }
 
         // Check if the selected time slot overlaps with any existing events or church time
         const isOverlapping = washingEvents.some(event =>
@@ -339,6 +342,10 @@ const WashingReservation: React.FC = () => {
       washingStartHour,
       washingEndHour
     );
+    if (endTime <= startTime) {
+      showConfirmationDialog('Please select a time within the washing hours.');
+      return;
+    }
 
     const now = new Date();
     if (startTime < now) {
@@ -845,7 +852,7 @@ const WashingReservation: React.FC = () => {
               className="h-full hide-allday-cell"
               style={{ height: 'calc(100% - 40px)' }}
               min={new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), washingStartHour, 0, 0)}
-              max={new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), washingEndHour, 0, 0)}
+              max={new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), Math.max(washingStartHour, washingEndHour - 1), 0, 0)}
               date={currentDate}
               onNavigate={(date) => setCurrentDate(date)}
               eventPropGetter={(event) => {
@@ -875,26 +882,51 @@ const WashingReservation: React.FC = () => {
               components={{
                 event: EventComponent,
                 timeSlotWrapper: (props: any) => {
-                  const isLastCell = selectedEndSlot &&
-                    props.value.getTime() === new Date(selectedEndSlot.getTime()).setMinutes(0, 0, 0);
+                  const lastSelectedStart = selectedEndSlot
+                    ? new Date(selectedEndSlot.getTime() - 60 * 60 * 1000)
+                    : null;
+                  const isConfirmSlot = !!(
+                    lastSelectedStart &&
+                    props.value.getTime() === lastSelectedStart.getTime()
+                  );
 
-                  if (isLastCell) {
-                    return (
-                      <div style={{ position: 'relative' }}>
-                        <TimeSlotWrapper {...props} />
+                  if (!isConfirmSlot) {
+                    return <TimeSlotWrapper {...props} />;
+                  }
+
+                  const isBottomRow = props.value.getHours() >= washingEndHour - 1;
+                  const slot = React.Children.only(props.children) as React.ReactElement<{
+                    className?: string;
+                    style?: React.CSSProperties;
+                    children?: React.ReactNode;
+                  }>;
+                  const styledSlot = TimeSlotWrapper({ ...props, children: slot });
+                  const node = (
+                    React.isValidElement(styledSlot) ? styledSlot : slot
+                  ) as React.ReactElement<{
+                    className?: string;
+                    style?: React.CSSProperties;
+                    children?: React.ReactNode;
+                  }>;
+
+                  return React.cloneElement(node, {
+                    className: `${node.props.className || ''} relative overflow-visible`,
+                    style: { ...node.props.style, overflow: 'visible' },
+                    children: (
+                      <>
+                        {node.props.children}
                         <Button
-                          className="button-check absolute z-[1] bottom-1 right-1 rounded-full w-6 h-6 p-0 flex items-center justify-center bg-green-500 hover:bg-green-600"
+                          className={`button-check absolute z-30 ${isBottomRow ? 'top-1' : 'bottom-1'} right-1 rounded-full w-6 h-6 p-0 flex items-center justify-center bg-green-500 hover:bg-green-600`}
                           onClick={(e) => {
-                            handleReservation();
                             e.stopPropagation();
+                            handleReservation();
                           }}
                         >
                           ✓
                         </Button>
-                      </div>
-                    );
-                  }
-                  return <TimeSlotWrapper {...props} />;
+                      </>
+                    ),
+                  });
                 },
               }}
               selectable={true}
