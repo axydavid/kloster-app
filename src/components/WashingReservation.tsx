@@ -230,9 +230,12 @@ const WashingReservation: React.FC = () => {
 
   const handleSlotSelect = useCallback((slotInfo: { start: Date; end: Date; action: string; bounds?: { x: number; y: number; top: number; bottom: number; left: number; right: number } }) => {
     // Ignore selections that start in the time gutter (left side of the calendar)
-    if (slotInfo.bounds && slotInfo.bounds.left > 50) {  // Adjust this value if needed
-      const now = new Date();
-      if (slotInfo.start < now) {
+    if (slotInfo.bounds && slotInfo.bounds.left <= 50) {
+      return;
+    }
+
+    const now = new Date();
+    if (slotInfo.start < now) {
         showConfirmationDialog("You cannot book a time slot in the past. Please select a future time slot.");
         return;
       }
@@ -280,7 +283,6 @@ const WashingReservation: React.FC = () => {
           showConfirmationDialog("This time slot is already booked. Please select another time.");
         }
       }
-    }
   }, [avoidChurchTime, churchStartHour, churchEndHour, hasWorkSchedule, workStartTime, workEndTime, washingEvents, selectedSlot, selectedEndSlot, washingStartHour, washingEndHour]);
 
   useEffect(() => {
