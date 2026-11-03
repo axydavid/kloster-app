@@ -889,11 +889,7 @@ const WashingReservation: React.FC = () => {
               components={{
                 event: EventComponent,
                 timeSlotWrapper: (props: any) => {
-                  const confirmSlotStart = getWashingConfirmSlotStart(
-                    selectedEndSlot,
-                    washingStartHour,
-                    washingEndHour
-                  );
+                  const confirmSlotStart = getWashingConfirmSlotStart(selectedEndSlot);
                   const isConfirmSlot = !!(
                     confirmSlotStart &&
                     sameWashingSlot(props.value, confirmSlotStart)
@@ -903,6 +899,7 @@ const WashingReservation: React.FC = () => {
                     return <TimeSlotWrapper {...props} />;
                   }
 
+                  const isBottomRow = props.value.getHours() >= washingEndHour - 1;
                   const slot = React.Children.only(props.children) as React.ReactElement<{
                     className?: string;
                     style?: React.CSSProperties;
@@ -924,7 +921,7 @@ const WashingReservation: React.FC = () => {
                       <>
                         {node.props.children}
                         <Button
-                          className="button-check absolute z-30 bottom-1 right-1 rounded-full w-6 h-6 p-0 flex items-center justify-center bg-green-500 hover:bg-green-600"
+                          className={`button-check absolute z-30 ${isBottomRow ? 'top-1' : 'bottom-1'} right-1 rounded-full w-6 h-6 p-0 flex items-center justify-center bg-green-500 hover:bg-green-600`}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleReservation();

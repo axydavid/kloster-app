@@ -137,11 +137,13 @@
   margin-bottom: 0;
 }
 
-.rbc-time-content{
+.rbc-time-content {
   overflow: hidden;
+  padding-bottom: 12px;
 }
 
-.rbc-timeslot-group:last-child {
+.rbc-timeslot-group:last-child,
+.rbc-timeslot-group:last-child .rbc-time-slot {
   overflow: visible;
 }
 

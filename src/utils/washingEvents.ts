@@ -22,25 +22,14 @@ export function sameWashingSlot(left: Date, right: Date) {
     && left.getHours() === right.getHours();
 }
 
-export function getWashingConfirmSlotStart(
-  selectedEnd: Date | null,
-  startHour: number,
-  endHour: number
-): Date | null {
+export function getWashingConfirmSlotStart(selectedEnd: Date | null): Date | null {
   if (!selectedEnd) {
     return null;
   }
 
-  const lastRowHour = Math.max(startHour, endHour - 1);
   const confirm = new Date(selectedEnd);
   confirm.setMinutes(0, 0, 0);
   confirm.setHours(lastSelectedHour(selectedEnd));
-
-  // Last row clips the check, so move it one slot up when that row exists.
-  if (confirm.getHours() >= lastRowHour && lastRowHour > startHour) {
-    confirm.setHours(confirm.getHours() - 1);
-  }
-
   return confirm;
 }
 
