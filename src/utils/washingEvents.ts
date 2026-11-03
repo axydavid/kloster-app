@@ -8,6 +8,42 @@ export interface WashingCalendarEvent {
   ids?: string[];
 }
 
+function lastSelectedHour(selectedEnd: Date) {
+  if (selectedEnd.getMinutes() === 0 && selectedEnd.getSeconds() === 0) {
+    return selectedEnd.getHours() - 1;
+  }
+  return selectedEnd.getHours();
+}
+
+export function sameWashingSlot(left: Date, right: Date) {
+  return left.getFullYear() === right.getFullYear()
+    && left.getMonth() === right.getMonth()
+    && left.getDate() === right.getDate()
+    && left.getHours() === right.getHours();
+}
+
+export function getWashingConfirmSlotStart(
+  selectedEnd: Date | null,
+  startHour: number,
+  endHour: number
+): Date | null {
+  if (!selectedEnd) {
+    return null;
+  }
+
+  const lastRowHour = Math.max(startHour, endHour - 1);
+  const confirm = new Date(selectedEnd);
+  confirm.setMinutes(0, 0, 0);
+  confirm.setHours(lastSelectedHour(selectedEnd));
+
+  // Last row clips the check, so move it one slot up when that row exists.
+  if (confirm.getHours() >= lastRowHour && lastRowHour > startHour) {
+    confirm.setHours(confirm.getHours() - 1);
+  }
+
+  return confirm;
+}
+
 export function clampWashingRange(start: Date, end: Date, startHour: number, endHour: number) {
   const clampedStart = new Date(start);
   const clampedEnd = new Date(end);
@@ -27,6 +63,10 @@ export function clampWashingRange(start: Date, end: Date, startHour: number, end
 
   if (clampedEnd > latestEnd) {
     clampedEnd.setTime(latestEnd.getTime());
+  }
+
+  if (clampedEnd.getHours() === endHour - 1 && (clampedEnd.getMinutes() > 0 || clampedEnd.getSeconds() > 0)) {
+    clampedEnd.setHours(endHour, 0, 0, 0);
   }
 
   if (clampedEnd <= clampedStart) {
