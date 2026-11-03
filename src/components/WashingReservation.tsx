@@ -1,20 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { User, PostgrestResponse } from '@supabase/supabase-js';
+import React, { useState, useEffect, useCallback, useContext, useMemo } from 'react';
+import { User } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Checkbox } from "./ui/checkbox"
 import { Label } from "./ui/label"
-import { Calendar, momentLocalizer, Views, EventProps } from 'react-big-calendar';
-import moment from 'moment';
-import 'moment/locale/en-gb';  // Import the British English locale
-import { Event } from 'react-big-calendar';
+import { Calendar, Views, EventProps } from 'react-big-calendar';
+import { addWeeks, endOfWeek, format, isSameWeek, startOfWeek, subWeeks } from 'date-fns';
+import { enGB } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import './WashingReservation.css'; // Add this import
-import './Dinner.css'; // Add this import for Dinner-specific styles
-import { X, CalendarIcon, Clock, AlertCircle } from 'lucide-react';
-import { calculateWashingCost } from '../utils/washingCost'; // Import the utility function
+import './WashingReservation.css';
+import './Dinner.css';
+import { X, CalendarIcon, Clock } from 'lucide-react';
+import { calculateWashingCost } from '../utils/washingCost';
 import { supabase } from '../utils/createClient';
+import { calendarLocalizer } from '../utils/calendarLocalizer';
+import { clampWashingRange, contrastTextColor, mergeAdjacentWashingEvents, WashingCalendarEvent } from '../utils/washingEvents';
+import { UserContext } from './Layout';
 
 // Function to check if a time slot is during church hours
 const isChurchTime = (date: Date, churchDay: number, churchStartHour: number, churchEndHour: number): boolean => {
@@ -70,16 +72,8 @@ const fetchAdminSettings = async () => {
   return data;
 };
 
-// Set the locale to British English (which uses Monday as the first day of the week)
-moment.locale('en-gb');
-
-// Setup the localizer by providing the moment object
-const localizer = momentLocalizer(moment);
-
-// Custom time slot formatter for 24-hour format
-const formatTimeSlot = (date: Date) => {
-  return moment(date).format('HH:mm');
-};
+const formatTimeSlot = (date: Date) => format(date, 'HH:mm');
+const weekOptions = { weekStartsOn: 1 as const, locale: enGB };
 
 // Custom component for time slot cell
 interface TimeSlotWrapperProps {
@@ -109,17 +103,10 @@ const TimeSlotWrapper = ({ children, value }: TimeSlotWrapperProps) => {
   return children;
 };
 
-interface CalendarEvent extends Event {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  allDay?: boolean;
-  resource?: string;
-  user_id: string;
-}
+type CalendarEvent = WashingCalendarEvent;
 
 const WashingReservation: React.FC = () => {
+  const users = useContext(UserContext);
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState<string>('');
   const [washingCount, setWashingCount] = useState<number>(1);
@@ -150,6 +137,11 @@ const WashingReservation: React.FC = () => {
   const [reservationOptions, setReservationOptions] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [hasRegistered, setHasRegistered] = useState(0);
+  const displayedEvents = useMemo(() => mergeAdjacentWashingEvents(washingEvents), [washingEvents]);
+  const getUserColor = (userId: string) =>
+    users.find(entry => entry.id === userId)?.raw_user_meta_data?.iconColor
+    || users.find(entry => entry.id === userId)?.raw_user_meta_data?.icon_color
+    || '#2563eb';
 
   useEffect(() => {
     localStorage.setItem('hasWorkSchedule', JSON.stringify(hasWorkSchedule));
@@ -195,8 +187,8 @@ const WashingReservation: React.FC = () => {
       const { data, error } = await supabase
         .from('washing_reservations')
         .select('*')
-        .gte('start_time', moment(currentDate).startOf('week').toISOString())
-        .lte('end_time', moment(currentDate).endOf('week').toISOString());
+        .gte('start_time', startOfWeek(currentDate, weekOptions).toISOString())
+        .lte('end_time', endOfWeek(currentDate, weekOptions).toISOString());
 
       if (error) {
         console.error('Error fetching reservations:', error);
@@ -263,17 +255,19 @@ const WashingReservation: React.FC = () => {
           return;
         }
 
+        const { start, end } = clampWashingRange(slotInfo.start, slotInfo.end, washingStartHour, washingEndHour);
+
         // Check if the selected time slot overlaps with any existing events or church time
         const isOverlapping = washingEvents.some(event =>
-          (slotInfo.start < event.end && slotInfo.end > event.start)
+          (start < event.end && end > event.start)
         );
-        const isChurchTimeSlot = avoidChurchTime && (isChurchTime(slotInfo.start, churchDay, churchStartHour, churchEndHour) || isChurchTime(new Date(slotInfo.end.getTime() - 1), churchDay, churchStartHour, churchEndHour));
-        const isWorkTimeSlot = hasWorkSchedule && slotInfo.start.getDay() >= 1 && slotInfo.start.getDay() <= 5 &&
-          (slotInfo.start.getHours() >= parseInt(workStartTime) && slotInfo.start.getHours() < parseInt(workEndTime));
+        const isChurchTimeSlot = avoidChurchTime && (isChurchTime(start, churchDay, churchStartHour, churchEndHour) || isChurchTime(new Date(end.getTime() - 1), churchDay, churchStartHour, churchEndHour));
+        const isWorkTimeSlot = hasWorkSchedule && start.getDay() >= 1 && start.getDay() <= 5 &&
+          (start.getHours() >= parseInt(workStartTime) && start.getHours() < parseInt(workEndTime));
 
         if (!isOverlapping && !isChurchTimeSlot && !isWorkTimeSlot) {
-          setSelectedSlot(slotInfo.start);
-          setSelectedEndSlot(slotInfo.end);
+          setSelectedSlot(start);
+          setSelectedEndSlot(end);
         } else if (isChurchTimeSlot) {
           const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][churchDay];
           showConfirmationDialog(`This time slot is during church hours (${dayName} ${churchStartHour}:00-${churchEndHour}:00). Please select another time or disable church time.`);
@@ -284,7 +278,7 @@ const WashingReservation: React.FC = () => {
         }
       }
     }
-  }, [avoidChurchTime, churchStartHour, churchEndHour, hasWorkSchedule, workStartTime, workEndTime, washingEvents, selectedSlot, selectedEndSlot]);
+  }, [avoidChurchTime, churchStartHour, churchEndHour, hasWorkSchedule, workStartTime, workEndTime, washingEvents, selectedSlot, selectedEndSlot, washingStartHour, washingEndHour]);
 
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -308,10 +302,11 @@ const WashingReservation: React.FC = () => {
     }
 
     // First, delete the associated budget entry
+    const reservationIds = event.ids || [event.id];
     const { error: budgetError } = await supabase
       .from('budget_entries')
       .delete()
-      .match({ reservation_id: event.id });
+      .in('reservation_id', reservationIds);
 
     if (budgetError) {
       console.error('Error deleting budget entry:', budgetError);
@@ -319,17 +314,16 @@ const WashingReservation: React.FC = () => {
       return;
     }
 
-    // Then, delete the reservation
     const { error: reservationError } = await supabase
       .from('washing_reservations')
       .delete()
-      .match({ id: event.id });
+      .in('id', reservationIds);
 
     if (reservationError) {
       console.error('Error deleting reservation:', reservationError);
       alert('Failed to delete reservation. Please try again.');
     } else {
-      setWashingEvents(prevEvents => prevEvents.filter(e => e.id !== event.id));
+      setWashingEvents(prevEvents => prevEvents.filter(e => !reservationIds.includes(e.id)));
     }
   };
 
@@ -339,8 +333,12 @@ const WashingReservation: React.FC = () => {
       return;
     }
 
-    const startTime = selectedSlot;
-    const endTime = selectedEndSlot;
+    const { start: startTime, end: endTime } = clampWashingRange(
+      selectedSlot,
+      selectedEndSlot,
+      washingStartHour,
+      washingEndHour
+    );
 
     const now = new Date();
     if (startTime < now) {
@@ -391,7 +389,7 @@ const WashingReservation: React.FC = () => {
       }
 
       // Create a budget entry for the washing reservation
-      const reservationDate = moment(startTime).format('D MMM');
+      const reservationDate = format(startTime, 'd MMM', { locale: enGB });
       let description = `Washing - ${reservationDate}: `;
       const parts = [];
       if (washingCount > 0) {
@@ -762,7 +760,7 @@ const WashingReservation: React.FC = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <Label className="text-lg font-semibold selected-time-label">Selected Time</Label><br />
-                      <span>{`${moment(selectedSlot).format('MMMM D, YYYY HH:mm')} - ${moment(selectedEndSlot).format('HH:mm')}`}</span>
+                      <span>{`${format(selectedSlot, 'MMMM d, yyyy HH:mm', { locale: enGB })} - ${format(selectedEndSlot, 'HH:mm')}`}</span>
                     </div>
                     <Button
                       onClick={handleReservation}
@@ -828,38 +826,47 @@ const WashingReservation: React.FC = () => {
           <div className="custom-toolbar">
             <Button onClick={handlePreviousWeek}>&lt;</Button>
             <span className="flex flex-wrap items-center justify-center">
-              <span>{moment(currentDate).startOf('week').format('MMM D')} - {moment(currentDate).endOf('week').format('MMM D, YYYY')}</span>
-              {moment(currentDate).isSame(moment(), 'week') && <span className="whitespace-nowrap">&nbsp;(current week)</span>}
-              {moment(currentDate).isSame(moment().add(1, 'week'), 'week') && <span className="whitespace-nowrap">&nbsp;(next week)</span>}
-              {moment(currentDate).isSame(moment().subtract(1, 'week'), 'week') && <span className="whitespace-nowrap">&nbsp;(last week)</span>}
+              <span>{format(startOfWeek(currentDate, weekOptions), 'MMM d')} - {format(endOfWeek(currentDate, weekOptions), 'MMM d, yyyy')}</span>
+              {isSameWeek(currentDate, new Date(), weekOptions) && <span className="whitespace-nowrap">&nbsp;(current week)</span>}
+              {isSameWeek(currentDate, addWeeks(new Date(), 1), weekOptions) && <span className="whitespace-nowrap">&nbsp;(next week)</span>}
+              {isSameWeek(currentDate, subWeeks(new Date(), 1), weekOptions) && <span className="whitespace-nowrap">&nbsp;(last week)</span>}
             </span>
             <Button onClick={handleNextWeek}>&gt;</Button>
           </div>
           <div className="h-full">
             <Calendar
-              localizer={localizer}
-              events={washingEvents}
+              localizer={calendarLocalizer}
+              culture="en-GB"
+              events={displayedEvents}
               startAccessor="start"
               endAccessor="end"
               defaultView={Views.WEEK}
               views={[Views.WEEK]}
               className="h-full hide-allday-cell"
               style={{ height: 'calc(100% - 40px)' }}
-              min={new Date(0, 0, 0, washingStartHour, 0, 0)}
-              max={new Date(0, 0, 0, washingEndHour + 1, 0, 0)}
-              // Note: The actual end time is still washingEndHour, 
-              // but the calendar will show up to washingEndHour + 1 to allow bookings until washingEndHour
+              min={new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), washingStartHour, 0, 0)}
+              max={new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), washingEndHour, 0, 0)}
               date={currentDate}
               onNavigate={(date) => setCurrentDate(date)}
+              eventPropGetter={(event) => {
+                const backgroundColor = getUserColor(event.user_id);
+                return {
+                  style: {
+                    backgroundColor,
+                    borderColor: backgroundColor,
+                    color: contrastTextColor(backgroundColor),
+                  },
+                };
+              }}
               formats={{
                 timeGutterFormat: formatTimeSlot,
                 eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
                   `${formatTimeSlot(start)} - ${formatTimeSlot(end)}`,
                 dayFormat: (date: Date) => {
-                  const isMobile = window.innerWidth <= 768; // Adjust this breakpoint as needed
+                  const isMobile = window.innerWidth <= 768;
                   return isMobile
-                    ? `${localizer.format(date, 'ddd')}`
-                    : `${localizer.format(date, 'D')} - ${localizer.format(date, 'ddd')}`;
+                    ? format(date, 'EEE', { locale: enGB })
+                    : `${format(date, 'd')} - ${format(date, 'EEE', { locale: enGB })}`;
                 },
               }}
               step={60}
@@ -914,7 +921,7 @@ const WashingReservation: React.FC = () => {
                       backgroundColor: 'hsl(var(--primary) / 30%)',
                       position: 'relative',
                     },
-                    ...(isFirstCell ? { title: `${moment(selectedSlot).format('HH:mm')} - ${moment(selectedEndSlot).format('HH:mm')}` } : {}),
+                    ...(isFirstCell ? { title: `${format(selectedSlot, 'HH:mm')} - ${format(selectedEndSlot, 'HH:mm')}` } : {}),
                   };
                 }
 

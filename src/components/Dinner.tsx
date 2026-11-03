@@ -928,7 +928,7 @@ const Dinner: React.FC = () => {
                             {/* Display guest count if there are any */}
                             {day.attendants.some(a => isGuestId(a.id)) && (
                               <div
-                                className="px-3 py-1 rounded-full text-sm font-bold text-gray-500 flex items-center gap-1 border border-gray-300 bg-white"
+                                className="px-3 py-1 rounded-full text-base font-bold text-gray-700 flex items-center gap-1 border border-gray-300 bg-white"
                               >
                                 <span>{getGuestLabel(day.attendants)}</span>
                               </div>

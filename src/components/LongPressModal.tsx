@@ -177,7 +177,7 @@ const LongPressModal: React.FC<LongPressModalProps> = ({
                 value={guestNames}
                 onChange={(e) => setGuestNames(e.target.value)}
                 placeholder="Names (optional)"
-                className="flex-1 bg-gray-100"
+                className="flex-1 bg-gray-100 font-bold text-lg h-11"
               />
             </div>
             <Button

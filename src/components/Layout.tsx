@@ -3,10 +3,12 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import UserMenu from './UserMenu';
 import { Button } from "./ui/button"
-import { LayoutDashboard, UtensilsCrossed, WashingMachine, ShieldCheck, Wallet, Calculator, Menu, X, BedDouble } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet"
+import { LayoutDashboard, UtensilsCrossed, WashingMachine, Wallet, Calculator, Menu, BedDouble } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { ReactComponent as Logo } from '../icons/logo.svg';
 import { isDeletedUser } from '../utils/users';
+import { cn } from '../lib/utils';
 
 const supabase = createClient(process.env.REACT_APP_SUPABASE_URL!, process.env.REACT_APP_SUPABASE_ANON_KEY!);
 
@@ -125,7 +127,6 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
   const location = useLocation();
   const [users, setUsers] = useState<UserData[]>([]);
-  const [logoColor, setLogoColor] = useState('#ffffff'); // Default color
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const fetchAllUsers = useCallback(async () => {
@@ -145,50 +146,33 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
 
   // Note: Do not change this to use a "users" table. We're using Supabase Auth for user data.
 
-  const isActive = (path: string) => {
-    return location.pathname === path ? "bg-primary-foreground text-primary" : "";
-  };
+  const isActive = (path: string) => location.pathname === path;
 
-  const NavItems = ({ isAdmin, isActive, onClick }: { isAdmin: boolean, isActive: (path: string) => string, onClick?: () => void }) => (
+  const navItems = [
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dinner', label: 'Dinner', icon: UtensilsCrossed },
+    { to: '/washing', label: 'Washing', icon: WashingMachine },
+    { to: '/guest-room', label: 'Guest Room', icon: BedDouble },
+    { to: '/budget', label: 'Budget', icon: Wallet },
+    ...(isAdmin ? [{ to: '/accounting', label: 'Accounting', icon: Calculator }] : []),
+  ];
+
+  const NavItems = ({ onClick, stacked = false }: { onClick?: () => void; stacked?: boolean }) => (
     <>
-      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/dashboard")}`} onClick={onClick}>
-        <Link to="/dashboard" className="flex items-center">
-          <LayoutDashboard className="mr-2 h-4 w-4" />
-          Dashboard
-        </Link>
-      </Button>
-      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/dinner")}`} onClick={onClick}>
-        <Link to="/dinner" className="flex items-center">
-          <UtensilsCrossed className="mr-2 h-4 w-4" />
-          Dinner
-        </Link>
-      </Button>
-      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/washing")}`} onClick={onClick}>
-        <Link to="/washing" className="flex items-center">
-          <WashingMachine className="mr-2 h-4 w-4" />
-          Washing
-        </Link>
-      </Button>
-      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/guest-room")}`} onClick={onClick}>
-        <Link to="/guest-room" className="flex items-center">
-          <BedDouble className="mr-2 h-4 w-4" />
-          Guest Room
-        </Link>
-      </Button>
-      <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/budget")}`} onClick={onClick}>
-        <Link to="/budget" className="flex items-center">
-          <Wallet className="mr-2 h-4 w-4" />
-          Budget
-        </Link>
-      </Button>
-      {isAdmin && (
-        <Button variant="ghost" asChild className={`w-full justify-start ${isActive("/accounting")}`} onClick={onClick}>
-          <Link to="/accounting" className="flex items-center">
-            <Calculator className="mr-2 h-4 w-4" />
-            Accounting
+      {navItems.map(({ to, label, icon: Icon }) => (
+        <Button
+          key={to}
+          variant={isActive(to) ? 'secondary' : 'ghost'}
+          asChild
+          className={cn(stacked && 'w-full justify-start')}
+          onClick={onClick}
+        >
+          <Link to={to} className="flex items-center">
+            <Icon className="mr-2 h-4 w-4" />
+            {label}
           </Link>
         </Button>
-      )}
+      ))}
     </>
   );
 
@@ -196,44 +180,41 @@ const Layout: React.FC<LayoutProps> = ({ session, isAdmin }) => {
     <UserContext.Provider value={users}>
     <RefreshUsersContext.Provider value={fetchAllUsers}>
       <div className="flex flex-col min-h-screen bg-background font-sans antialiased">
-      <header className="bg-primary text-primary-foreground p-4 sm:p-4 p-2 relative">
-        <div className="mx-4">
-          <nav className="flex justify-between items-center">
-            <div className="flex space-x-14">
-              <Link to="/" className="flex items-center">
-                <Logo className="h-8 w-auto" style={{ fill: logoColor }} />
-              </Link>
-              <Link to="/" className="text-2xl font-bold absolute" style={{ color: logoColor }}>KlosterApp</Link>
-            </div>
-            <div className="hidden md:flex space-x-2">
-              <NavItems isAdmin={isAdmin} isActive={isActive} />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center">
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="mr-2 md:hidden">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Open menu</span>
               </Button>
-              {session && (
-                <UserMenu session={session} isAdmin={isAdmin} />
-              )}
-            </div>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <SheetHeader>
+                <SheetTitle>KlosterApp</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1">
+                <NavItems stacked onClick={() => setIsMobileMenuOpen(false)} />
+              </nav>
+            </SheetContent>
+          </Sheet>
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <Logo className="h-7 w-auto fill-foreground" />
+            <span className="font-bold">KlosterApp</span>
+          </Link>
+          <nav className="hidden items-center gap-1 md:flex">
+            <NavItems />
           </nav>
-          {isMobileMenuOpen && (
-            <nav className="md:hidden flex flex-col space-y-2 mt-4">
-              <NavItems isAdmin={isAdmin} isActive={isActive} onClick={() => setIsMobileMenuOpen(false)} />
-            </nav>
-          )}
+          <div className="ml-auto flex items-center">
+            {session && <UserMenu session={session} isAdmin={isAdmin} />}
+          </div>
         </div>
       </header>
       <main className="flex-grow container mx-auto mt-8 p-4 px-0 sm:px-4">
         <Outlet />
       </main>
-      <footer className="bg-primary text-primary-foreground p-4 text-center">
-        © 2023 KlosterApp
+      <footer className="border-t bg-background p-4 text-center text-sm text-muted-foreground">
+        © {new Date().getFullYear()} KlosterApp
       </footer>
     </div>
     </RefreshUsersContext.Provider>
