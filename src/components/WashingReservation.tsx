@@ -97,10 +97,10 @@ const TimeSlotWrapper = ({ children, value }: TimeSlotWrapperProps) => {
     value.getHours() === now.getHours();
 
   if (isCurrentHour) {
-    return React.cloneElement(children, {
-      ...children.props,
+    const child = children as React.ReactElement<{ style?: React.CSSProperties }>;
+    return React.cloneElement(child, {
       style: {
-        ...children.props.style,
+        ...child.props.style,
         backgroundColor: 'rgba(0, 255, 0, 0.1)',
       },
     });

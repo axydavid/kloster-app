@@ -766,9 +766,10 @@ const Dinner: React.FC = () => {
                             {(day.ingredients || []).length > 0 ? (
                               (day.ingredients || []).map((ingredient, index) => (
                                 <span key={index} className="inline-flex items-center">
-                                  {React.cloneElement(ingredientIcons[ingredient] || <span>{ingredient}</span>, {
-                                    className: 'w-7 h-auto md:w-12 md:h-auto'
-                                  })}
+                                  {React.cloneElement(
+                                    (ingredientIcons[ingredient] || <span>{ingredient}</span>) as React.ReactElement<{ className?: string }>,
+                                    { className: 'w-7 h-auto md:w-12 md:h-auto' }
+                                  )}
                                 </span>
                               ))
                             ) : (
